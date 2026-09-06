@@ -75,11 +75,25 @@ const PHOTO_CREDITS = [
 
 const krw = (n) => `${Math.round((n ?? 0) / 10000)}만원`;
 
+// 도시명을 함께 넣어야 동명의 다른 장소로 잡히지 않는다
+const mapUrl = (city, place) =>
+  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${city} ${place}`)}`;
+
+function MapPinIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"
+         strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+      <circle cx="12" cy="10" r="3" />
+    </svg>
+  );
+}
+
 /**
  * 생성된 일정 표시. 지금은 히어로 아래 인라인으로 붙어 있고,
  * 라우팅 추가 시 별도 결과 페이지로 분리할 예정.
  */
-function ItineraryResult({ data }) {
+export function ItineraryResult({ data }) {
   return (
     <section className="atl-section atl-result">
       <div className="atl-section-head">
@@ -108,6 +122,17 @@ function ItineraryResult({ data }) {
                     <p className="atl-result-place-name">
                       {p.name}
                       <span className="atl-result-cat">{p.category}</span>
+                      <a
+                        className="atl-map-link"
+                        href={mapUrl(data.destination, p.name)}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        title={`${p.name} 구글 지도에서 보기`}
+                        aria-label={`${p.name} 구글 지도에서 보기 (새 탭)`}
+                      >
+                        <MapPinIcon />
+                        지도
+                      </a>
                     </p>
                     <p className="atl-result-desc">{p.description}</p>
                     {p.moveFromPrev && <p className="atl-result-move">{p.moveFromPrev}</p>}

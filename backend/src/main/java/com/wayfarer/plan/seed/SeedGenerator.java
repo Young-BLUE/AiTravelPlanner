@@ -1,5 +1,6 @@
 package com.wayfarer.plan.seed;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wayfarer.plan.PlanService;
 import com.wayfarer.plan.cache.CacheKey;
@@ -19,6 +20,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -54,12 +57,52 @@ public class SeedGenerator implements ApplicationRunner {
     @Value("${wayfarer.seed.concurrency:4}")
     private int concurrency;
 
+    private static CacheKey keyOf(SeedCombos.Combo combo) {
+        return CacheKey.from(new PlanParams(combo.destination(), combo.nights(),
+                combo.budgetKrw(), combo.style(), false), LocalDate.now());
+    }
+
+    /** 기존 시드를 읽는다. 없거나 깨졌으면 빈 목록으로 시작한다. */
+    private List<SeedEntry> readExisting(Path path) {
+        if (!Files.exists(path)) {
+            return new ArrayList<>();
+        }
+        try {
+            return new ArrayList<>(OBJECT_MAPPER.readValue(Files.readString(path),
+                    new TypeReference<List<SeedEntry>>() {
+                    }));
+        } catch (Exception e) {
+            log.warn("기존 시드를 읽지 못해 처음부터 생성합니다: {}", e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        List<SeedCombos.Combo> combos = SeedCombos.all();
+        Path out = Path.of(outputPath);
+
+        // 이미 만들어 둔 항목은 다시 만들지 않는다.
+        // 60건을 40분간 돌리는 작업이라 중간에 죽었을 때 처음부터 다시 하면 그대로 돈이다.
+        List<SeedEntry> existing = readExisting(out);
+        Set<String> existingKeys = existing.stream()
+                .map(SeedEntry::cacheKey)
+                .collect(java.util.stream.Collectors.toSet());
+
+        List<SeedCombos.Combo> combos = new ArrayList<>();
+        for (SeedCombos.Combo combo : SeedCombos.all()) {
+            CacheKey key = keyOf(combo);
+            if (!existingKeys.contains(key.asString())) {
+                combos.add(combo);
+            }
+        }
         if (limit > 0 && limit < combos.size()) {
             combos = combos.subList(0, limit);
         }
+        if (combos.isEmpty()) {
+            log.info("이미 {}건이 모두 생성돼 있어 할 일이 없습니다", existing.size());
+            return;
+        }
+        log.info("기존 {}건 유지, 신규 {}건 생성", existing.size(), combos.size());
 
         String season = CacheKey.from(
                 new PlanParams("x", 0, 0, "일반", false), LocalDate.now()).season();
@@ -76,10 +119,7 @@ public class SeedGenerator implements ApplicationRunner {
                 futures.add(pool.submit((Callable<Void>) () -> {
                     try {
                         Itinerary itinerary = planService.generateFresh(combo.prompt());
-                        CacheKey key = CacheKey.from(
-                                new PlanParams(combo.destination(), combo.nights(),
-                                        combo.budgetKrw(), combo.style(), false),
-                                LocalDate.now());
+                        CacheKey key = keyOf(combo);
                         results.add(new SeedEntry(key.asString(), key.destination(), key.nights(),
                                 key.budgetBand(), key.style(), key.season(),
                                 OBJECT_MAPPER.writeValueAsString(itinerary)));
@@ -98,9 +138,9 @@ public class SeedGenerator implements ApplicationRunner {
             }
         }
 
+        results.addAll(existing);
         results.sort((a, b) -> a.cacheKey().compareTo(b.cacheKey()));
 
-        Path out = Path.of(outputPath);
         Files.createDirectories(out.getParent());
         Files.writeString(out, OBJECT_MAPPER.writerWithDefaultPrettyPrinter()
                 .writeValueAsString(results));

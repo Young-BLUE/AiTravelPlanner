@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +25,7 @@ import java.util.List;
  */
 @Slf4j
 @Component
+@Profile("!seed")   // 시드 생성 모드에서는 주입할 이유가 없다
 @RequiredArgsConstructor
 public class SeedLoader implements ApplicationRunner {
 
