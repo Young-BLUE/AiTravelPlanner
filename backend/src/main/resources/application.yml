@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: wayfarer
+
+  # 일정 캐시 저장소. 파일 모드라 재기동해도 캐시가 남는다.
+  # (인메모리로 두면 껐다 켤 때마다 128원짜리 생성을 처음부터 다시 해야 함)
+  datasource:
+    url: ${WAYFARER_DB_URL:jdbc:h2:file:./data/wayfarer;DB_CLOSE_DELAY=-1}
+    username: ${WAYFARER_DB_USER:sa}
+    password: ${WAYFARER_DB_PASSWORD:}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+
+server:
+  port: 8080
+
+wayfarer:
+  claude:
+    # 키는 환경변수에서만 온다. 절대 이 파일에 직접 적지 말 것
+    api-key: ${ANTHROPIC_API_KEY:}
+    model: claude-opus-5
+    max-tokens: 16000
+    # low / medium / high / xhigh / max
+    effort: ${WAYFARER_EFFORT:high}
+    # 파라미터 추출용 - 빠르고 저렴한 모델이면 충분
+    extract-model: claude-haiku-4-5
+
+  cache:
+    # 일정에 실존 장소가 들어가므로 무한정 두면 폐업·이전 정보가 남는다
+    ttl-days: 90
+
+logging:
+  level:
+    com.wayfarer: DEBUG

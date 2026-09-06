@@ -1,0 +1,5 @@
+# 시드 생성 전용 프로파일.
+# 웹 서버를 띄우지 않아 생성이 끝나면 프로세스가 알아서 종료된다.
+spring:
+  main:
+    web-application-type: none

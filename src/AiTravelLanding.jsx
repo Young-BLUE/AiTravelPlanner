@@ -73,6 +73,74 @@ const PHOTO_CREDITS = [
   { city: '뉴욕', author: 'Terabass', license: 'CC BY-SA 3.0', href: 'https://commons.wikimedia.org/wiki/File:New_york_times_square-terabass.jpg' },
 ];
 
+const krw = (n) => `${Math.round((n ?? 0) / 10000)}만원`;
+
+/**
+ * 생성된 일정 표시. 지금은 히어로 아래 인라인으로 붙어 있고,
+ * 라우팅 추가 시 별도 결과 페이지로 분리할 예정.
+ */
+function ItineraryResult({ data }) {
+  return (
+    <section className="atl-section atl-result">
+      <div className="atl-section-head">
+        <h2>
+          {data.destination}
+          <span className="atl-result-country">{data.country}</span>
+        </h2>
+        <p>
+          {data.nights}박 {data.nights + 1}일 · {data.style}
+        </p>
+      </div>
+
+      <ul className="atl-result-days">
+        {data.days.map((d) => (
+          <li className="atl-result-day" key={d.day}>
+            <div className="atl-result-day-head">
+              <span className="atl-result-day-no">{d.day}일차</span>
+              <span className="atl-result-day-theme">{d.theme}</span>
+              <span className="atl-result-day-cost">{krw(d.estCostKrw)}</span>
+            </div>
+            <ol className="atl-result-places">
+              {d.places.map((p, i) => (
+                <li key={`${d.day}-${i}`}>
+                  <span className="atl-result-time">{p.time}</span>
+                  <div>
+                    <p className="atl-result-place-name">
+                      {p.name}
+                      <span className="atl-result-cat">{p.category}</span>
+                    </p>
+                    <p className="atl-result-desc">{p.description}</p>
+                    {p.moveFromPrev && <p className="atl-result-move">{p.moveFromPrev}</p>}
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </li>
+        ))}
+      </ul>
+
+      <div className="atl-result-budget">
+        <h3>예상 경비 (1인)</h3>
+        <ul>
+          <li><span>항공</span><span>{krw(data.budget.flightKrw)}</span></li>
+          <li><span>숙박</span><span>{krw(data.budget.stayKrw)}</span></li>
+          <li><span>식비</span><span>{krw(data.budget.foodKrw)}</span></li>
+          <li><span>활동</span><span>{krw(data.budget.activityKrw)}</span></li>
+          <li className="atl-result-total"><span>합계</span><span>{krw(data.budget.totalKrw)}</span></li>
+        </ul>
+      </div>
+
+      {data.tips?.length > 0 && (
+        <ul className="atl-result-tips">
+          {data.tips.map((t) => (
+            <li key={t}>{t}</li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
 function FeatureIcon({ children }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -83,11 +151,37 @@ function FeatureIcon({ children }) {
 
 export default function AiTravelLanding() {
   const [prompt, setPrompt] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [itinerary, setItinerary] = useState(null);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: LLM API 호출로 연결
-    console.log('여행 계획 요청:', prompt);
+    if (!prompt.trim() || loading) return;
+
+    setLoading(true);
+    setError('');
+    setItinerary(null);
+
+    try {
+      const res = await fetch('/api/plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt }),
+      });
+
+      if (!res.ok) {
+        // 서버가 내려주는 사용자용 메시지를 그대로 노출한다
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.message || '일정을 만들지 못했어요. 다시 시도해 주세요.');
+      }
+
+      setItinerary(await res.json());
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -112,9 +206,9 @@ export default function AiTravelLanding() {
         <section className="atl-hero">
           <p className="atl-eyebrow">AI 여행 플래너</p>
           <h1 className="atl-title">
-            어디로 갈지만 알려주세요.
+            가고 싶은 여행지를 입력하고
             <br />
-            <span className="atl-title-accent">일정은 AI가 짜드릴게요.</span>
+            <span className="atl-title-accent">일정과 예약까지 한번에</span>
           </h1>
           <p className="atl-subtitle">
             목적지·기간·예산만 입력하면 일자별 코스와 예상 경비를 한 번에 정리해 드려요.
@@ -127,21 +221,30 @@ export default function AiTravelLanding() {
               placeholder="떠나고 싶은 여행지, 계획을 세워보세요"
               rows={2}
             />
-            <button type="submit" className="atl-submit" aria-label="일정 만들기">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M5 12h13M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+            <button type="submit" className="atl-submit" aria-label="일정 만들기" disabled={loading || !prompt.trim()}>
+              {loading ? (
+                <span className="atl-spinner" aria-hidden="true" />
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M5 12h13M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              )}
             </button>
           </form>
 
           <div className="atl-chips">
             {QUICK_PROMPTS.map((q) => (
-              <button type="button" key={q} className="atl-chip" onClick={() => setPrompt(q)}>
+              <button type="button" key={q} className="atl-chip" onClick={() => setPrompt(q)} disabled={loading}>
                 {q}
               </button>
             ))}
           </div>
+
+          {loading && <p className="atl-status">AI가 일정을 짜고 있어요. 2분 정도 걸려요.</p>}
+          {error && <p className="atl-status atl-status-error" role="alert">{error}</p>}
         </section>
+
+        {itinerary && <ItineraryResult data={itinerary} />}
 
         {/* Top5 인기 여행지 */}
         <section className="atl-section" id="top5">

@@ -5,3 +5,9 @@ dist
 .env
 .env.local
 .idea
+
+# Spring Boot / Gradle
+backend/build/
+backend/.gradle/
+backend/bin/
+backend/data/

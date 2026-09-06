@@ -1,0 +1,71 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '4.1.1'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.wayfarer'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+	// 개발용. 운영에서는 MySQL/Postgres 로 교체 (application.yml 의 datasource 만 바꾸면 됨)
+	runtimeOnly 'com.h2database:h2'
+
+	// Claude API 공식 Java SDK
+	implementation 'com.anthropic:anthropic-java:2.61.0'
+
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-validation-test'
+	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+	testCompileOnly 'org.projectlombok:lombok'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	testAnnotationProcessor 'org.projectlombok:lombok'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+// ── 프론트엔드(Vite) 빌드 결과를 정적 리소스로 포함 ──────────────
+// 백엔드만 돌릴 때는 -PskipFrontend 로 건너뛸 수 있음
+def frontendDir = file("${projectDir}/..")
+def skipFrontend = project.hasProperty('skipFrontend')
+
+tasks.register('npmInstall', Exec) {
+	workingDir frontendDir
+	commandLine 'npm', 'install'
+	inputs.file("${frontendDir}/package-lock.json")
+	outputs.dir("${frontendDir}/node_modules")
+}
+
+tasks.register('buildFrontend', Exec) {
+	dependsOn 'npmInstall'
+	workingDir frontendDir
+	commandLine 'npm', 'run', 'build'
+	inputs.dir("${frontendDir}/src")
+	inputs.dir("${frontendDir}/public")
+	inputs.file("${frontendDir}/index.html")
+	outputs.dir("${frontendDir}/dist")
+}
+
+processResources {
+	if (!skipFrontend) {
+		dependsOn 'buildFrontend'
+		from("${frontendDir}/dist") { into 'static' }
+	}
+}
