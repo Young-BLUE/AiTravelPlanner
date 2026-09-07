@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import './AiTravelLanding.css';
 
 // 임시 목업 데이터 - 실제로는 API/CMS에서 받아올 예정
@@ -15,7 +15,9 @@ const TOP_DESTINATIONS = [
 const COMPANIONS = ['혼자', '연인', '친구', '가족'];
 const BUDGETS = ['가성비', '보통', '프리미엄'];
 const INTERESTS = ['관광', '맛집', '쇼핑', '카페', '야경', '애니메이션', '자연', '테마파크'];
-const NIGHTS = [1, 2, 3, 4, 5];
+// 버튼으로 노출할 짧은 일정. 그보다 길면 '일주일 이상'에서 고른다
+const QUICK_NIGHTS = [1, 2, 3, 4];
+const LONG_NIGHTS = [5, 6, 7, 8, 9, 10, 13];
 
 // 관심사는 고를수록 캐시 조합이 곱으로 늘어난다. 3개로 제한해 히트율을 지킨다
 const MAX_INTERESTS = 3;
@@ -236,15 +238,125 @@ const EMPTY_FORM = {
   nights: 3,
   companion: '',
   budget: '',
+  budgetKrw: '',
   interests: [],
   hotelArea: '',
   extra: '',
 };
 
+const nightsLabel = (n) => `${n}박 ${n + 1}일`;
+
+/** 도시 자동완성 입력. 한글·영문·초성 어느 쪽으로 쳐도 서버가 찾아준다. */
+function CityInput({ value, onChange, disabled }) {
+  const [items, setItems] = useState([]);
+  const [open, setOpen] = useState(false);
+  const [active, setActive] = useState(-1);
+  const boxRef = useRef(null);
+  // 선택으로 값이 바뀐 직후에는 다시 조회하지 않는다 (목록이 즉시 닫히도록)
+  const skipFetch = useRef(false);
+
+  useEffect(() => {
+    if (skipFetch.current) {
+      skipFetch.current = false;
+      return;
+    }
+    if (!open) return;
+
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/cities?q=${encodeURIComponent(value)}&limit=8`);
+        if (res.ok) {
+          setItems(await res.json());
+          setActive(-1);
+        }
+      } catch {
+        setItems([]); // 자동완성 실패가 입력 자체를 막지는 않는다
+      }
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [value, open]);
+
+  useEffect(() => {
+    const onDocClick = (e) => {
+      if (boxRef.current && !boxRef.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', onDocClick);
+    return () => document.removeEventListener('mousedown', onDocClick);
+  }, []);
+
+  const pick = (city) => {
+    skipFetch.current = true;
+    onChange(city.city);
+    setOpen(false);
+  };
+
+  const onKeyDown = (e) => {
+    if (!open || items.length === 0) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActive((i) => (i + 1) % items.length);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActive((i) => (i - 1 + items.length) % items.length);
+    } else if (e.key === 'Enter' && active >= 0) {
+      e.preventDefault();
+      pick(items[active]);
+    } else if (e.key === 'Escape') {
+      setOpen(false);
+    }
+  };
+
+  return (
+    <div className="atl-combo" ref={boxRef}>
+      <input
+        id="atl-dest"
+        type="text"
+        autoComplete="off"
+        role="combobox"
+        aria-expanded={open}
+        aria-controls="atl-city-list"
+        value={value}
+        disabled={disabled}
+        onChange={(e) => {
+          onChange(e.target.value);
+          setOpen(true);
+        }}
+        onFocus={() => setOpen(true)}
+        onKeyDown={onKeyDown}
+        placeholder="도시명을 입력하세요 (예: 도쿄, ㄷㅋ, Tokyo)"
+        maxLength={40}
+      />
+      {open && items.length > 0 && (
+        <ul className="atl-combo-list" id="atl-city-list" role="listbox">
+          {items.map((c, i) => (
+            <li key={`${c.city}-${c.country}`}>
+              <button
+                type="button"
+                role="option"
+                aria-selected={i === active}
+                className={`atl-combo-item ${i === active ? 'is-active' : ''}`}
+                onMouseEnter={() => setActive(i)}
+                onClick={() => pick(c)}
+              >
+                <span className="atl-combo-city">{c.city}</span>
+                <span className="atl-combo-meta">
+                  {c.country} · {c.nameEn}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 export default function AiTravelLanding() {
   const [mode, setMode] = useState('free'); // free | form
   const [prompt, setPrompt] = useState('');
   const [form, setForm] = useState(EMPTY_FORM);
+  const [showLongStay, setShowLongStay] = useState(false);
+  const [customBudget, setCustomBudget] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
@@ -289,7 +401,13 @@ export default function AiTravelLanding() {
   const handleFormSubmit = (e) => {
     e.preventDefault();
     if (!form.destination.trim()) return;
-    requestPlan({ ...form, destination: form.destination.trim() });
+    requestPlan({
+      ...form,
+      destination: form.destination.trim(),
+      // 입력은 만원 단위로 받고 서버에는 원 단위로 보낸다
+      budgetKrw: customBudget && form.budgetKrw ? Number(form.budgetKrw) * 10000 : null,
+      budget: customBudget ? '' : form.budget,
+    });
   };
 
   const toggleInterest = (interest) => {
@@ -396,63 +514,117 @@ export default function AiTravelLanding() {
             <form className="atl-form" onSubmit={handleFormSubmit}>
               <div className="atl-field">
                 <label htmlFor="atl-dest">어디로 가시나요?</label>
-                <input
-                  id="atl-dest"
-                  type="text"
+                <CityInput
                   value={form.destination}
-                  onChange={(e) => setForm({ ...form, destination: e.target.value })}
-                  placeholder="도쿄, 다낭, 방콕..."
-                  maxLength={40}
+                  onChange={(v) => setForm({ ...form, destination: v })}
+                  disabled={loading}
                 />
               </div>
 
-              <div className="atl-field-row">
-                <div className="atl-field">
-                  <label htmlFor="atl-nights">기간</label>
-                  <select
-                    id="atl-nights"
-                    value={form.nights}
-                    onChange={(e) => setForm({ ...form, nights: Number(e.target.value) })}
+              <div className="atl-field">
+                <span className="atl-field-label">기간</span>
+                <div className="atl-opts atl-opts-fill">
+                  {QUICK_NIGHTS.map((n) => (
+                    <button
+                      type="button"
+                      key={n}
+                      className={`atl-opt ${!showLongStay && form.nights === n ? 'is-on' : ''}`}
+                      onClick={() => {
+                        setShowLongStay(false);
+                        setForm({ ...form, nights: n });
+                      }}
+                    >
+                      {nightsLabel(n)}
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    className={`atl-opt ${showLongStay ? 'is-on' : ''}`}
+                    onClick={() => {
+                      const next = !showLongStay;
+                      setShowLongStay(next);
+                      if (next) setForm({ ...form, nights: LONG_NIGHTS[0] });
+                    }}
                   >
-                    {NIGHTS.map((n) => (
-                      <option key={n} value={n}>
-                        {n}박 {n + 1}일
-                      </option>
-                    ))}
-                  </select>
+                    일주일 이상
+                  </button>
                 </div>
 
-                <div className="atl-field">
-                  <span className="atl-field-label">동행</span>
-                  <div className="atl-opts">
-                    {COMPANIONS.map((c) => (
+                {showLongStay && (
+                  <div className="atl-opts atl-opts-sub">
+                    {LONG_NIGHTS.map((n) => (
                       <button
                         type="button"
-                        key={c}
-                        className={`atl-opt ${form.companion === c ? 'is-on' : ''}`}
-                        onClick={() => setForm({ ...form, companion: form.companion === c ? '' : c })}
+                        key={n}
+                        className={`atl-opt ${form.nights === n ? 'is-on' : ''}`}
+                        onClick={() => setForm({ ...form, nights: n })}
                       >
-                        {c}
+                        {nightsLabel(n)}
                       </button>
                     ))}
                   </div>
+                )}
+              </div>
+
+              <div className="atl-field">
+                <span className="atl-field-label">동행</span>
+                <div className="atl-opts">
+                  {COMPANIONS.map((c) => (
+                    <button
+                      type="button"
+                      key={c}
+                      className={`atl-opt ${form.companion === c ? 'is-on' : ''}`}
+                      onClick={() => setForm({ ...form, companion: form.companion === c ? '' : c })}
+                    >
+                      {c}
+                    </button>
+                  ))}
                 </div>
               </div>
 
               <div className="atl-field">
-                <span className="atl-field-label">예산</span>
-                <div className="atl-opts">
+                <span className="atl-field-label">예산<em>1인 기준</em></span>
+                <div className="atl-opts atl-opts-budget">
                   {BUDGETS.map((b) => (
                     <button
                       type="button"
                       key={b}
-                      className={`atl-opt ${form.budget === b ? 'is-on' : ''}`}
-                      onClick={() => setForm({ ...form, budget: form.budget === b ? '' : b })}
+                      className={`atl-opt ${!customBudget && form.budget === b ? 'is-on' : ''}`}
+                      onClick={() => {
+                        setCustomBudget(false);
+                        setForm({ ...form, budget: form.budget === b ? '' : b, budgetKrw: '' });
+                      }}
                     >
                       {b}
                     </button>
                   ))}
+                  <button
+                    type="button"
+                    className={`atl-opt atl-opt-last ${customBudget ? 'is-on' : ''}`}
+                    onClick={() => {
+                      const next = !customBudget;
+                      setCustomBudget(next);
+                      if (next) setForm({ ...form, budget: '' });
+                    }}
+                  >
+                    직접 입력
+                  </button>
                 </div>
+
+                {customBudget && (
+                  <div className="atl-budget-input">
+                    <input
+                      type="number"
+                      min="1"
+                      max="10000"
+                      value={form.budgetKrw}
+                      onChange={(e) => setForm({ ...form, budgetKrw: e.target.value })}
+                      placeholder="80"
+                      aria-label="1인 예산 (만원)"
+                    />
+                    <span>만원</span>
+                  </div>
+                )}
               </div>
 
               <div className="atl-field">

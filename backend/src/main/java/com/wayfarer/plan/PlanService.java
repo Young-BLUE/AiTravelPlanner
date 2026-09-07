@@ -154,11 +154,19 @@ public class PlanService {
                 PlanParams.Intent.PLAN,
                 request.destination().trim(),
                 request.nights() == null || request.nights() <= 0 ? 3 : request.nights(),
-                budgetTierToKrw(request.budget()),
+                resolveBudget(request),
                 request.companion(),
                 request.interests() == null ? List.of() : request.interests(),
                 "무관",
                 hasExtra);
+    }
+
+    /** 직접 입력한 금액이 있으면 그걸 쓰고, 없으면 등급을 금액으로 옮긴다. */
+    private int resolveBudget(PlanRequest request) {
+        if (request.budgetKrw() != null && request.budgetKrw() > 0) {
+            return request.budgetKrw();
+        }
+        return budgetTierToKrw(request.budget());
     }
 
     /**
@@ -187,7 +195,9 @@ public class PlanService {
         if (notBlank(request.companion())) {
             sb.append(", 동행: ").append(request.companion().trim());
         }
-        if (notBlank(request.budget())) {
+        if (request.budgetKrw() != null && request.budgetKrw() > 0) {
+            sb.append(", 예산: 1인 ").append(request.budgetKrw() / 10_000).append("만원");
+        } else if (notBlank(request.budget())) {
             sb.append(", 예산: ").append(request.budget().trim());
         }
         if (request.interests() != null && !request.interests().isEmpty()) {

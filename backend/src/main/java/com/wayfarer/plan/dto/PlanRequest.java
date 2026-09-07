@@ -1,6 +1,8 @@
 package com.wayfarer.plan.dto;
 
 import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 
 import java.util.List;
@@ -26,6 +28,11 @@ public record PlanRequest(
 
         /** 가성비 / 보통 / 프리미엄. 비우면 미지정 */
         String budget,
+
+        /** 직접 입력한 1인 예산 (원). 값이 있으면 budget 등급보다 우선한다 */
+        @Min(value = 0, message = "예산은 0원 이상이어야 합니다.")
+        @Max(value = 100_000_000, message = "예산이 너무 큽니다.")
+        Integer budgetKrw,
 
         /** 관광 / 맛집 / 쇼핑 / 카페 / 야경 / 애니메이션 / 자연 / 테마파크 */
         List<String> interests,

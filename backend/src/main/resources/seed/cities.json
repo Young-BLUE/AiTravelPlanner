@@ -1,0 +1,1150 @@
+[
+  {
+    "nameKo": "도쿄",
+    "nameEn": "Tokyo",
+    "country": "일본",
+    "chosung": "ㄷㅋ",
+    "popularity": 100
+  },
+  {
+    "nameKo": "오사카",
+    "nameEn": "Osaka",
+    "country": "일본",
+    "chosung": "ㅇㅅㅋ",
+    "popularity": 99
+  },
+  {
+    "nameKo": "방콕",
+    "nameEn": "Bangkok",
+    "country": "태국",
+    "chosung": "ㅂㅋ",
+    "popularity": 98
+  },
+  {
+    "nameKo": "다낭",
+    "nameEn": "Da Nang",
+    "country": "베트남",
+    "chosung": "ㄷㄴ",
+    "popularity": 97
+  },
+  {
+    "nameKo": "후쿠오카",
+    "nameEn": "Fukuoka",
+    "country": "일본",
+    "chosung": "ㅎㅋㅇㅋ",
+    "popularity": 97
+  },
+  {
+    "nameKo": "제주",
+    "nameEn": "Jeju",
+    "country": "대한민국",
+    "chosung": "ㅈㅈ",
+    "popularity": 96
+  },
+  {
+    "nameKo": "타이베이",
+    "nameEn": "Taipei",
+    "country": "대만",
+    "chosung": "ㅌㅇㅂㅇ",
+    "popularity": 95
+  },
+  {
+    "nameKo": "부산",
+    "nameEn": "Busan",
+    "country": "대한민국",
+    "chosung": "ㅂㅅ",
+    "popularity": 94
+  },
+  {
+    "nameKo": "싱가포르",
+    "nameEn": "Singapore",
+    "country": "싱가포르",
+    "chosung": "ㅅㄱㅍㄹ",
+    "popularity": 94
+  },
+  {
+    "nameKo": "홍콩",
+    "nameEn": "Hong Kong",
+    "country": "홍콩",
+    "chosung": "ㅎㅋ",
+    "popularity": 94
+  },
+  {
+    "nameKo": "발리",
+    "nameEn": "Bali",
+    "country": "인도네시아",
+    "chosung": "ㅂㄹ",
+    "popularity": 93
+  },
+  {
+    "nameKo": "삿포로",
+    "nameEn": "Sapporo",
+    "country": "일본",
+    "chosung": "ㅅㅍㄹ",
+    "popularity": 93
+  },
+  {
+    "nameKo": "서울",
+    "nameEn": "Seoul",
+    "country": "대한민국",
+    "chosung": "ㅅㅇ",
+    "popularity": 93
+  },
+  {
+    "nameKo": "교토",
+    "nameEn": "Kyoto",
+    "country": "일본",
+    "chosung": "ㄱㅌ",
+    "popularity": 92
+  },
+  {
+    "nameKo": "세부",
+    "nameEn": "Cebu",
+    "country": "필리핀",
+    "chosung": "ㅅㅂ",
+    "popularity": 92
+  },
+  {
+    "nameKo": "파리",
+    "nameEn": "Paris",
+    "country": "프랑스",
+    "chosung": "ㅍㄹ",
+    "popularity": 92
+  },
+  {
+    "nameKo": "푸켓",
+    "nameEn": "Phuket",
+    "country": "태국",
+    "chosung": "ㅍㅋ",
+    "popularity": 91
+  },
+  {
+    "nameKo": "괌",
+    "nameEn": "Guam",
+    "country": "미국",
+    "chosung": "ㄱ",
+    "popularity": 90
+  },
+  {
+    "nameKo": "나트랑",
+    "nameEn": "Nha Trang",
+    "country": "베트남",
+    "chosung": "ㄴㅌㄹ",
+    "popularity": 90
+  },
+  {
+    "nameKo": "뉴욕",
+    "nameEn": "New York",
+    "country": "미국",
+    "chosung": "ㄴㅇ",
+    "popularity": 90
+  },
+  {
+    "nameKo": "런던",
+    "nameEn": "London",
+    "country": "영국",
+    "chosung": "ㄹㄷ",
+    "popularity": 90
+  },
+  {
+    "nameKo": "로마",
+    "nameEn": "Rome",
+    "country": "이탈리아",
+    "chosung": "ㄹㅁ",
+    "popularity": 89
+  },
+  {
+    "nameKo": "바르셀로나",
+    "nameEn": "Barcelona",
+    "country": "스페인",
+    "chosung": "ㅂㄹㅅㄹㄴ",
+    "popularity": 88
+  },
+  {
+    "nameKo": "보라카이",
+    "nameEn": "Boracay",
+    "country": "필리핀",
+    "chosung": "ㅂㄹㅋㅇ",
+    "popularity": 88
+  },
+  {
+    "nameKo": "오키나와",
+    "nameEn": "Okinawa",
+    "country": "일본",
+    "chosung": "ㅇㅋㄴㅇ",
+    "popularity": 88
+  },
+  {
+    "nameKo": "호놀룰루",
+    "nameEn": "Honolulu",
+    "country": "미국",
+    "chosung": "ㅎㄴㄹㄹ",
+    "popularity": 88
+  },
+  {
+    "nameKo": "호치민",
+    "nameEn": "Ho Chi Minh",
+    "country": "베트남",
+    "chosung": "ㅎㅊㅁ",
+    "popularity": 88
+  },
+  {
+    "nameKo": "로스앤젤레스",
+    "nameEn": "Los Angeles",
+    "country": "미국",
+    "chosung": "ㄹㅅㅇㅈㄹㅅ",
+    "popularity": 86
+  },
+  {
+    "nameKo": "몰디브",
+    "nameEn": "Maldives",
+    "country": "몰디브",
+    "chosung": "ㅁㄷㅂ",
+    "popularity": 86
+  },
+  {
+    "nameKo": "코타키나발루",
+    "nameEn": "Kota Kinabalu",
+    "country": "말레이시아",
+    "chosung": "ㅋㅌㅋㄴㅂㄹ",
+    "popularity": 86
+  },
+  {
+    "nameKo": "프라하",
+    "nameEn": "Prague",
+    "country": "체코",
+    "chosung": "ㅍㄹㅎ",
+    "popularity": 86
+  },
+  {
+    "nameKo": "강릉",
+    "nameEn": "Gangneung",
+    "country": "대한민국",
+    "chosung": "ㄱㄹ",
+    "popularity": 85
+  },
+  {
+    "nameKo": "치앙마이",
+    "nameEn": "Chiang Mai",
+    "country": "태국",
+    "chosung": "ㅊㅇㅁㅇ",
+    "popularity": 85
+  },
+  {
+    "nameKo": "하노이",
+    "nameEn": "Hanoi",
+    "country": "베트남",
+    "chosung": "ㅎㄴㅇ",
+    "popularity": 85
+  },
+  {
+    "nameKo": "두바이",
+    "nameEn": "Dubai",
+    "country": "아랍에미리트",
+    "chosung": "ㄷㅂㅇ",
+    "popularity": 84
+  },
+  {
+    "nameKo": "마카오",
+    "nameEn": "Macau",
+    "country": "마카오",
+    "chosung": "ㅁㅋㅇ",
+    "popularity": 84
+  },
+  {
+    "nameKo": "베네치아",
+    "nameEn": "Venice",
+    "country": "이탈리아",
+    "chosung": "ㅂㄴㅊㅇ",
+    "popularity": 84
+  },
+  {
+    "nameKo": "빈",
+    "nameEn": "Vienna",
+    "country": "오스트리아",
+    "chosung": "ㅂ",
+    "popularity": 84
+  },
+  {
+    "nameKo": "산토리니",
+    "nameEn": "Santorini",
+    "country": "그리스",
+    "chosung": "ㅅㅌㄹㄴ",
+    "popularity": 84
+  },
+  {
+    "nameKo": "시드니",
+    "nameEn": "Sydney",
+    "country": "호주",
+    "chosung": "ㅅㄷㄴ",
+    "popularity": 84
+  },
+  {
+    "nameKo": "여수",
+    "nameEn": "Yeosu",
+    "country": "대한민국",
+    "chosung": "ㅇㅅ",
+    "popularity": 84
+  },
+  {
+    "nameKo": "푸꾸옥",
+    "nameEn": "Phu Quoc",
+    "country": "베트남",
+    "chosung": "ㅍㄲㅇ",
+    "popularity": 84
+  },
+  {
+    "nameKo": "암스테르담",
+    "nameEn": "Amsterdam",
+    "country": "네덜란드",
+    "chosung": "ㅇㅅㅌㄹㄷ",
+    "popularity": 83
+  },
+  {
+    "nameKo": "쿠알라룸푸르",
+    "nameEn": "Kuala Lumpur",
+    "country": "말레이시아",
+    "chosung": "ㅋㅇㄹㄹㅍㄹ",
+    "popularity": 83
+  },
+  {
+    "nameKo": "피렌체",
+    "nameEn": "Florence",
+    "country": "이탈리아",
+    "chosung": "ㅍㄹㅊ",
+    "popularity": 83
+  },
+  {
+    "nameKo": "경주",
+    "nameEn": "Gyeongju",
+    "country": "대한민국",
+    "chosung": "ㄱㅈ",
+    "popularity": 82
+  },
+  {
+    "nameKo": "라스베이거스",
+    "nameEn": "Las Vegas",
+    "country": "미국",
+    "chosung": "ㄹㅅㅂㅇㄱㅅ",
+    "popularity": 82
+  },
+  {
+    "nameKo": "리스본",
+    "nameEn": "Lisbon",
+    "country": "포르투갈",
+    "chosung": "ㄹㅅㅂ",
+    "popularity": 82
+  },
+  {
+    "nameKo": "부다페스트",
+    "nameEn": "Budapest",
+    "country": "헝가리",
+    "chosung": "ㅂㄷㅍㅅㅌ",
+    "popularity": 82
+  },
+  {
+    "nameKo": "사이판",
+    "nameEn": "Saipan",
+    "country": "미국",
+    "chosung": "ㅅㅇㅍ",
+    "popularity": 82
+  },
+  {
+    "nameKo": "상하이",
+    "nameEn": "Shanghai",
+    "country": "중국",
+    "chosung": "ㅅㅎㅇ",
+    "popularity": 82
+  },
+  {
+    "nameKo": "샌프란시스코",
+    "nameEn": "San Francisco",
+    "country": "미국",
+    "chosung": "ㅅㅍㄹㅅㅅㅋ",
+    "popularity": 82
+  },
+  {
+    "nameKo": "이스탄불",
+    "nameEn": "Istanbul",
+    "country": "튀르키예",
+    "chosung": "ㅇㅅㅌㅂ",
+    "popularity": 82
+  },
+  {
+    "nameKo": "속초",
+    "nameEn": "Sokcho",
+    "country": "대한민국",
+    "chosung": "ㅅㅊ",
+    "popularity": 81
+  },
+  {
+    "nameKo": "나고야",
+    "nameEn": "Nagoya",
+    "country": "일본",
+    "chosung": "ㄴㄱㅇ",
+    "popularity": 80
+  },
+  {
+    "nameKo": "마드리드",
+    "nameEn": "Madrid",
+    "country": "스페인",
+    "chosung": "ㅁㄷㄹㄷ",
+    "popularity": 80
+  },
+  {
+    "nameKo": "밴쿠버",
+    "nameEn": "Vancouver",
+    "country": "캐나다",
+    "chosung": "ㅂㅋㅂ",
+    "popularity": 80
+  },
+  {
+    "nameKo": "베이징",
+    "nameEn": "Beijing",
+    "country": "중국",
+    "chosung": "ㅂㅇㅈ",
+    "popularity": 80
+  },
+  {
+    "nameKo": "인터라켄",
+    "nameEn": "Interlaken",
+    "country": "스위스",
+    "chosung": "ㅇㅌㄹㅋ",
+    "popularity": 80
+  },
+  {
+    "nameKo": "전주",
+    "nameEn": "Jeonju",
+    "country": "대한민국",
+    "chosung": "ㅈㅈ",
+    "popularity": 80
+  },
+  {
+    "nameKo": "파타야",
+    "nameEn": "Pattaya",
+    "country": "태국",
+    "chosung": "ㅍㅌㅇ",
+    "popularity": 80
+  },
+  {
+    "nameKo": "호이안",
+    "nameEn": "Hoi An",
+    "country": "베트남",
+    "chosung": "ㅎㅇㅇ",
+    "popularity": 80
+  },
+  {
+    "nameKo": "멜버른",
+    "nameEn": "Melbourne",
+    "country": "호주",
+    "chosung": "ㅁㅂㄹ",
+    "popularity": 78
+  },
+  {
+    "nameKo": "뮌헨",
+    "nameEn": "Munich",
+    "country": "독일",
+    "chosung": "ㅁㅎ",
+    "popularity": 78
+  },
+  {
+    "nameKo": "밀라노",
+    "nameEn": "Milan",
+    "country": "이탈리아",
+    "chosung": "ㅁㄹㄴ",
+    "popularity": 78
+  },
+  {
+    "nameKo": "벳푸",
+    "nameEn": "Beppu",
+    "country": "일본",
+    "chosung": "ㅂㅍ",
+    "popularity": 78
+  },
+  {
+    "nameKo": "블라디보스토크",
+    "nameEn": "Vladivostok",
+    "country": "러시아",
+    "chosung": "ㅂㄹㄷㅂㅅㅌㅋ",
+    "popularity": 78
+  },
+  {
+    "nameKo": "아테네",
+    "nameEn": "Athens",
+    "country": "그리스",
+    "chosung": "ㅇㅌㄴ",
+    "popularity": 78
+  },
+  {
+    "nameKo": "취리히",
+    "nameEn": "Zurich",
+    "country": "스위스",
+    "chosung": "ㅊㄹㅎ",
+    "popularity": 78
+  },
+  {
+    "nameKo": "카파도키아",
+    "nameEn": "Cappadocia",
+    "country": "튀르키예",
+    "chosung": "ㅋㅍㄷㅋㅇ",
+    "popularity": 78
+  },
+  {
+    "nameKo": "포르투",
+    "nameEn": "Porto",
+    "country": "포르투갈",
+    "chosung": "ㅍㄹㅌ",
+    "popularity": 78
+  },
+  {
+    "nameKo": "베를린",
+    "nameEn": "Berlin",
+    "country": "독일",
+    "chosung": "ㅂㄹㄹ",
+    "popularity": 77
+  },
+  {
+    "nameKo": "가오슝",
+    "nameEn": "Kaohsiung",
+    "country": "대만",
+    "chosung": "ㄱㅇㅅ",
+    "popularity": 76
+  },
+  {
+    "nameKo": "두브로브니크",
+    "nameEn": "Dubrovnik",
+    "country": "크로아티아",
+    "chosung": "ㄷㅂㄹㅂㄴㅋ",
+    "popularity": 76
+  },
+  {
+    "nameKo": "루체른",
+    "nameEn": "Lucerne",
+    "country": "스위스",
+    "chosung": "ㄹㅊㄹ",
+    "popularity": 76
+  },
+  {
+    "nameKo": "시애틀",
+    "nameEn": "Seattle",
+    "country": "미국",
+    "chosung": "ㅅㅇㅌ",
+    "popularity": 76
+  },
+  {
+    "nameKo": "칭다오",
+    "nameEn": "Qingdao",
+    "country": "중국",
+    "chosung": "ㅊㄷㅇ",
+    "popularity": 76
+  },
+  {
+    "nameKo": "씨엠립",
+    "nameEn": "Siem Reap",
+    "country": "캄보디아",
+    "chosung": "ㅆㅇㄹ",
+    "popularity": 75
+  },
+  {
+    "nameKo": "하코다테",
+    "nameEn": "Hakodate",
+    "country": "일본",
+    "chosung": "ㅎㅋㄷㅌ",
+    "popularity": 75
+  },
+  {
+    "nameKo": "골드코스트",
+    "nameEn": "Gold Coast",
+    "country": "호주",
+    "chosung": "ㄱㄷㅋㅅㅌ",
+    "popularity": 74
+  },
+  {
+    "nameKo": "끄라비",
+    "nameEn": "Krabi",
+    "country": "태국",
+    "chosung": "ㄲㄹㅂ",
+    "popularity": 74
+  },
+  {
+    "nameKo": "나라",
+    "nameEn": "Nara",
+    "country": "일본",
+    "chosung": "ㄴㄹ",
+    "popularity": 74
+  },
+  {
+    "nameKo": "니스",
+    "nameEn": "Nice",
+    "country": "프랑스",
+    "chosung": "ㄴㅅ",
+    "popularity": 74
+  },
+  {
+    "nameKo": "레이캬비크",
+    "nameEn": "Reykjavik",
+    "country": "아이슬란드",
+    "chosung": "ㄹㅇㅋㅂㅋ",
+    "popularity": 74
+  },
+  {
+    "nameKo": "마이애미",
+    "nameEn": "Miami",
+    "country": "미국",
+    "chosung": "ㅁㅇㅇㅁ",
+    "popularity": 74
+  },
+  {
+    "nameKo": "시카고",
+    "nameEn": "Chicago",
+    "country": "미국",
+    "chosung": "ㅅㅋㄱ",
+    "popularity": 74
+  },
+  {
+    "nameKo": "올랜도",
+    "nameEn": "Orlando",
+    "country": "미국",
+    "chosung": "ㅇㄹㄷ",
+    "popularity": 74
+  },
+  {
+    "nameKo": "퀸스타운",
+    "nameEn": "Queenstown",
+    "country": "뉴질랜드",
+    "chosung": "ㅋㅅㅌㅇ",
+    "popularity": 74
+  },
+  {
+    "nameKo": "토론토",
+    "nameEn": "Toronto",
+    "country": "캐나다",
+    "chosung": "ㅌㄹㅌ",
+    "popularity": 74
+  },
+  {
+    "nameKo": "통영",
+    "nameEn": "Tongyeong",
+    "country": "대한민국",
+    "chosung": "ㅌㅇ",
+    "popularity": 74
+  },
+  {
+    "nameKo": "팔라완",
+    "nameEn": "Palawan",
+    "country": "필리핀",
+    "chosung": "ㅍㄹㅇ",
+    "popularity": 74
+  },
+  {
+    "nameKo": "헬싱키",
+    "nameEn": "Helsinki",
+    "country": "핀란드",
+    "chosung": "ㅎㅅㅋ",
+    "popularity": 74
+  },
+  {
+    "nameKo": "고베",
+    "nameEn": "Kobe",
+    "country": "일본",
+    "chosung": "ㄱㅂ",
+    "popularity": 73
+  },
+  {
+    "nameKo": "구마모토",
+    "nameEn": "Kumamoto",
+    "country": "일본",
+    "chosung": "ㄱㅁㅁㅌ",
+    "popularity": 72
+  },
+  {
+    "nameKo": "마닐라",
+    "nameEn": "Manila",
+    "country": "필리핀",
+    "chosung": "ㅁㄴㄹ",
+    "popularity": 72
+  },
+  {
+    "nameKo": "보스턴",
+    "nameEn": "Boston",
+    "country": "미국",
+    "chosung": "ㅂㅅㅌ",
+    "popularity": 72
+  },
+  {
+    "nameKo": "에든버러",
+    "nameEn": "Edinburgh",
+    "country": "영국",
+    "chosung": "ㅇㄷㅂㄹ",
+    "popularity": 72
+  },
+  {
+    "nameKo": "오클랜드",
+    "nameEn": "Auckland",
+    "country": "뉴질랜드",
+    "chosung": "ㅇㅋㄹㄷ",
+    "popularity": 72
+  },
+  {
+    "nameKo": "요코하마",
+    "nameEn": "Yokohama",
+    "country": "일본",
+    "chosung": "ㅇㅋㅎㅁ",
+    "popularity": 72
+  },
+  {
+    "nameKo": "워싱턴DC",
+    "nameEn": "Washington DC",
+    "country": "미국",
+    "chosung": "ㅇㅅㅌDC",
+    "popularity": 72
+  },
+  {
+    "nameKo": "장자제",
+    "nameEn": "Zhangjiajie",
+    "country": "중국",
+    "chosung": "ㅈㅈㅈ",
+    "popularity": 72
+  },
+  {
+    "nameKo": "춘천",
+    "nameEn": "Chuncheon",
+    "country": "대한민국",
+    "chosung": "ㅊㅊ",
+    "popularity": 72
+  },
+  {
+    "nameKo": "칸쿤",
+    "nameEn": "Cancun",
+    "country": "멕시코",
+    "chosung": "ㅋㅋ",
+    "popularity": 72
+  },
+  {
+    "nameKo": "코펜하겐",
+    "nameEn": "Copenhagen",
+    "country": "덴마크",
+    "chosung": "ㅋㅍㅎㄱ",
+    "popularity": 72
+  },
+  {
+    "nameKo": "페낭",
+    "nameEn": "Penang",
+    "country": "말레이시아",
+    "chosung": "ㅍㄴ",
+    "popularity": 72
+  },
+  {
+    "nameKo": "프랑크푸르트",
+    "nameEn": "Frankfurt",
+    "country": "독일",
+    "chosung": "ㅍㄹㅋㅍㄹㅌ",
+    "popularity": 72
+  },
+  {
+    "nameKo": "히로시마",
+    "nameEn": "Hiroshima",
+    "country": "일본",
+    "chosung": "ㅎㄹㅅㅁ",
+    "popularity": 71
+  },
+  {
+    "nameKo": "가고시마",
+    "nameEn": "Kagoshima",
+    "country": "일본",
+    "chosung": "ㄱㄱㅅㅁ",
+    "popularity": 70
+  },
+  {
+    "nameKo": "거제",
+    "nameEn": "Geoje",
+    "country": "대한민국",
+    "chosung": "ㄱㅈ",
+    "popularity": 70
+  },
+  {
+    "nameKo": "나폴리",
+    "nameEn": "Naples",
+    "country": "이탈리아",
+    "chosung": "ㄴㅍㄹ",
+    "popularity": 70
+  },
+  {
+    "nameKo": "남해",
+    "nameEn": "Namhae",
+    "country": "대한민국",
+    "chosung": "ㄴㅎ",
+    "popularity": 70
+  },
+  {
+    "nameKo": "달랏",
+    "nameEn": "Da Lat",
+    "country": "베트남",
+    "chosung": "ㄷㄹ",
+    "popularity": 70
+  },
+  {
+    "nameKo": "대구",
+    "nameEn": "Daegu",
+    "country": "대한민국",
+    "chosung": "ㄷㄱ",
+    "popularity": 70
+  },
+  {
+    "nameKo": "랑카위",
+    "nameEn": "Langkawi",
+    "country": "말레이시아",
+    "chosung": "ㄹㅋㅇ",
+    "popularity": 70
+  },
+  {
+    "nameKo": "브리즈번",
+    "nameEn": "Brisbane",
+    "country": "호주",
+    "chosung": "ㅂㄹㅈㅂ",
+    "popularity": 70
+  },
+  {
+    "nameKo": "스톡홀름",
+    "nameEn": "Stockholm",
+    "country": "스웨덴",
+    "chosung": "ㅅㅌㅎㄹ",
+    "popularity": 70
+  },
+  {
+    "nameKo": "아부다비",
+    "nameEn": "Abu Dhabi",
+    "country": "아랍에미리트",
+    "chosung": "ㅇㅂㄷㅂ",
+    "popularity": 70
+  },
+  {
+    "nameKo": "오슬로",
+    "nameEn": "Oslo",
+    "country": "노르웨이",
+    "chosung": "ㅇㅅㄹ",
+    "popularity": 70
+  },
+  {
+    "nameKo": "청두",
+    "nameEn": "Chengdu",
+    "country": "중국",
+    "chosung": "ㅊㄷ",
+    "popularity": 70
+  },
+  {
+    "nameKo": "코사무이",
+    "nameEn": "Koh Samui",
+    "country": "태국",
+    "chosung": "ㅋㅅㅁㅇ",
+    "popularity": 70
+  },
+  {
+    "nameKo": "타이중",
+    "nameEn": "Taichung",
+    "country": "대만",
+    "chosung": "ㅌㅇㅈ",
+    "popularity": 70
+  },
+  {
+    "nameKo": "더블린",
+    "nameEn": "Dublin",
+    "country": "아일랜드",
+    "chosung": "ㄷㅂㄹ",
+    "popularity": 68
+  },
+  {
+    "nameKo": "도하",
+    "nameEn": "Doha",
+    "country": "카타르",
+    "chosung": "ㄷㅎ",
+    "popularity": 68
+  },
+  {
+    "nameKo": "브뤼셀",
+    "nameEn": "Brussels",
+    "country": "벨기에",
+    "chosung": "ㅂㄹㅅ",
+    "popularity": 68
+  },
+  {
+    "nameKo": "시안",
+    "nameEn": "Xi'an",
+    "country": "중국",
+    "chosung": "ㅅㅇ",
+    "popularity": 68
+  },
+  {
+    "nameKo": "인천",
+    "nameEn": "Incheon",
+    "country": "대한민국",
+    "chosung": "ㅇㅊ",
+    "popularity": 68
+  },
+  {
+    "nameKo": "케언스",
+    "nameEn": "Cairns",
+    "country": "호주",
+    "chosung": "ㅋㅇㅅ",
+    "popularity": 68
+  },
+  {
+    "nameKo": "포항",
+    "nameEn": "Pohang",
+    "country": "대한민국",
+    "chosung": "ㅍㅎ",
+    "popularity": 68
+  },
+  {
+    "nameKo": "가나자와",
+    "nameEn": "Kanazawa",
+    "country": "일본",
+    "chosung": "ㄱㄴㅈㅇ",
+    "popularity": 67
+  },
+  {
+    "nameKo": "항저우",
+    "nameEn": "Hangzhou",
+    "country": "중국",
+    "chosung": "ㅎㅈㅇ",
+    "popularity": 67
+  },
+  {
+    "nameKo": "가평",
+    "nameEn": "Gapyeong",
+    "country": "대한민국",
+    "chosung": "ㄱㅍ",
+    "popularity": 66
+  },
+  {
+    "nameKo": "광저우",
+    "nameEn": "Guangzhou",
+    "country": "중국",
+    "chosung": "ㄱㅈㅇ",
+    "popularity": 66
+  },
+  {
+    "nameKo": "멕시코시티",
+    "nameEn": "Mexico City",
+    "country": "멕시코",
+    "chosung": "ㅁㅅㅋㅅㅌ",
+    "popularity": 66
+  },
+  {
+    "nameKo": "센다이",
+    "nameEn": "Sendai",
+    "country": "일본",
+    "chosung": "ㅅㄷㅇ",
+    "popularity": 66
+  },
+  {
+    "nameKo": "안동",
+    "nameEn": "Andong",
+    "country": "대한민국",
+    "chosung": "ㅇㄷ",
+    "popularity": 66
+  },
+  {
+    "nameKo": "자그레브",
+    "nameEn": "Zagreb",
+    "country": "크로아티아",
+    "chosung": "ㅈㄱㄹㅂ",
+    "popularity": 66
+  },
+  {
+    "nameKo": "크라쿠프",
+    "nameEn": "Krakow",
+    "country": "폴란드",
+    "chosung": "ㅋㄹㅋㅍ",
+    "popularity": 66
+  },
+  {
+    "nameKo": "클락",
+    "nameEn": "Clark",
+    "country": "필리핀",
+    "chosung": "ㅋㄹ",
+    "popularity": 66
+  },
+  {
+    "nameKo": "자카르타",
+    "nameEn": "Jakarta",
+    "country": "인도네시아",
+    "chosung": "ㅈㅋㄹㅌ",
+    "popularity": 65
+  },
+  {
+    "nameKo": "하이난",
+    "nameEn": "Hainan",
+    "country": "중국",
+    "chosung": "ㅎㅇㄴ",
+    "popularity": 65
+  },
+  {
+    "nameKo": "나디",
+    "nameEn": "Nadi",
+    "country": "피지",
+    "chosung": "ㄴㄷ",
+    "popularity": 64
+  },
+  {
+    "nameKo": "루앙프라방",
+    "nameEn": "Luang Prabang",
+    "country": "라오스",
+    "chosung": "ㄹㅇㅍㄹㅂ",
+    "popularity": 64
+  },
+  {
+    "nameKo": "마라케시",
+    "nameEn": "Marrakesh",
+    "country": "모로코",
+    "chosung": "ㅁㄹㅋㅅ",
+    "popularity": 64
+  },
+  {
+    "nameKo": "바르샤바",
+    "nameEn": "Warsaw",
+    "country": "폴란드",
+    "chosung": "ㅂㄹㅅㅂ",
+    "popularity": 64
+  },
+  {
+    "nameKo": "카이로",
+    "nameEn": "Cairo",
+    "country": "이집트",
+    "chosung": "ㅋㅇㄹ",
+    "popularity": 64
+  },
+  {
+    "nameKo": "화롄",
+    "nameEn": "Hualien",
+    "country": "대만",
+    "chosung": "ㅎㄹ",
+    "popularity": 64
+  },
+  {
+    "nameKo": "리우데자네이루",
+    "nameEn": "Rio de Janeiro",
+    "country": "브라질",
+    "chosung": "ㄹㅇㄷㅈㄴㅇㄹ",
+    "popularity": 62
+  },
+  {
+    "nameKo": "비엔티안",
+    "nameEn": "Vientiane",
+    "country": "라오스",
+    "chosung": "ㅂㅇㅌㅇ",
+    "popularity": 62
+  },
+  {
+    "nameKo": "울란바토르",
+    "nameEn": "Ulaanbaatar",
+    "country": "몽골",
+    "chosung": "ㅇㄹㅂㅌㄹ",
+    "popularity": 62
+  },
+  {
+    "nameKo": "케이프타운",
+    "nameEn": "Cape Town",
+    "country": "남아프리카공화국",
+    "chosung": "ㅋㅇㅍㅌㅇ",
+    "popularity": 62
+  },
+  {
+    "nameKo": "쿠스코",
+    "nameEn": "Cusco",
+    "country": "페루",
+    "chosung": "ㅋㅅㅋ",
+    "popularity": 62
+  },
+  {
+    "nameKo": "다카마쓰",
+    "nameEn": "Takamatsu",
+    "country": "일본",
+    "chosung": "ㄷㅋㅁㅆ",
+    "popularity": 60
+  },
+  {
+    "nameKo": "프놈펜",
+    "nameEn": "Phnom Penh",
+    "country": "캄보디아",
+    "chosung": "ㅍㄴㅍ",
+    "popularity": 60
+  },
+  {
+    "nameKo": "델리",
+    "nameEn": "Delhi",
+    "country": "인도",
+    "chosung": "ㄷㄹ",
+    "popularity": 58
+  },
+  {
+    "nameKo": "마쓰야마",
+    "nameEn": "Matsuyama",
+    "country": "일본",
+    "chosung": "ㅁㅆㅇㅁ",
+    "popularity": 58
+  },
+  {
+    "nameKo": "부에노스아이레스",
+    "nameEn": "Buenos Aires",
+    "country": "아르헨티나",
+    "chosung": "ㅂㅇㄴㅅㅇㅇㄹㅅ",
+    "popularity": 58
+  },
+  {
+    "nameKo": "알마티",
+    "nameEn": "Almaty",
+    "country": "카자흐스탄",
+    "chosung": "ㅇㅁㅌ",
+    "popularity": 58
+  },
+  {
+    "nameKo": "카트만두",
+    "nameEn": "Kathmandu",
+    "country": "네팔",
+    "chosung": "ㅋㅌㅁㄷ",
+    "popularity": 58
+  },
+  {
+    "nameKo": "콜롬보",
+    "nameEn": "Colombo",
+    "country": "스리랑카",
+    "chosung": "ㅋㄹㅂ",
+    "popularity": 58
+  },
+  {
+    "nameKo": "타슈켄트",
+    "nameEn": "Tashkent",
+    "country": "우즈베키스탄",
+    "chosung": "ㅌㅅㅋㅌ",
+    "popularity": 56
+  },
+  {
+    "nameKo": "텔아비브",
+    "nameEn": "Tel Aviv",
+    "country": "이스라엘",
+    "chosung": "ㅌㅇㅂㅂ",
+    "popularity": 56
+  },
+  {
+    "nameKo": "시즈오카",
+    "nameEn": "Shizuoka",
+    "country": "일본",
+    "chosung": "ㅅㅈㅇㅋ",
+    "popularity": 55
+  },
+  {
+    "nameKo": "양곤",
+    "nameEn": "Yangon",
+    "country": "미얀마",
+    "chosung": "ㅇㄱ",
+    "popularity": 55
+  },
+  {
+    "nameKo": "뭄바이",
+    "nameEn": "Mumbai",
+    "country": "인도",
+    "chosung": "ㅁㅂㅇ",
+    "popularity": 54
+  }
+]
