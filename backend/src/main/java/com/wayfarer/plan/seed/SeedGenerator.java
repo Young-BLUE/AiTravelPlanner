@@ -58,8 +58,8 @@ public class SeedGenerator implements ApplicationRunner {
     private int concurrency;
 
     private static CacheKey keyOf(SeedCombos.Combo combo) {
-        return CacheKey.from(new PlanParams(combo.destination(), combo.nights(),
-                combo.budgetKrw(), combo.style(), false), LocalDate.now());
+        return CacheKey.from(new PlanParams(PlanParams.Intent.PLAN, combo.destination(),
+                combo.nights(), combo.budgetKrw(), combo.style(), "", false), LocalDate.now());
     }
 
     /** 기존 시드를 읽는다. 없거나 깨졌으면 빈 목록으로 시작한다. */
@@ -104,8 +104,7 @@ public class SeedGenerator implements ApplicationRunner {
         }
         log.info("기존 {}건 유지, 신규 {}건 생성", existing.size(), combos.size());
 
-        String season = CacheKey.from(
-                new PlanParams("x", 0, 0, "일반", false), LocalDate.now()).season();
+        String season = CacheKey.season(LocalDate.now().getMonthValue());
         log.info("시드 생성 시작 - {}건 / 동시 {} / 계절 {}", combos.size(), concurrency, season);
 
         List<SeedEntry> results = Collections.synchronizedList(new ArrayList<>());

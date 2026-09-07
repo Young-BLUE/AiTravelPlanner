@@ -2,9 +2,19 @@ package com.wayfarer.plan.dto;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
-/** 자유 문장에서 뽑아낸 캐시 키 재료. 이 4개 축이 같으면 같은 일정으로 본다. */
+/**
+ * 자유 문장에서 뽑아낸 요청 정보.
+ *
+ * intent 가 PLAN 이면 destination 이하가 캐시 키 재료가 되고,
+ * DISCOVER 면 목적지가 아직 없으므로 추천 조건으로만 쓰인다.
+ */
 public record PlanParams(
-        @JsonPropertyDescription("여행 도시명 (한국어). 예: 도쿄")
+        @JsonPropertyDescription("""
+                PLAN: 갈 곳을 이미 정했고 일정을 원한다. 예: '도쿄 3박4일', '오사카 여행 짜줘'
+                DISCOVER: 어디로 갈지 고르는 중이다. 예: '겨울 여행지 추천', '100만원으로 갈 만한 곳'""")
+        Intent intent,
+
+        @JsonPropertyDescription("여행 도시명 (한국어). 예: 도쿄. 목적지를 정하지 않았으면 빈 문자열")
         String destination,
 
         @JsonPropertyDescription("숙박 일수. '3박 4일'이면 3. 언급이 없으면 3")
@@ -17,9 +27,29 @@ public record PlanParams(
         String style,
 
         @JsonPropertyDescription("""
-                위 4개 항목으로 표현되지 않는 구체적 요구가 있으면 true.
+                DISCOVER 일 때 목적지를 고르는 기준. 아래 중 가장 가까운 하나만 고른다.
+                겨울 / 봄 / 여름 / 가을 / 따뜻한곳 / 시원한곳 / 휴양 / 도시 / 자연 / 미식 / 무관.
+                시기나 조건이 드러나지 않으면 '무관'. PLAN 이면 '무관'""")
+        String discoveryTheme,
+
+        @JsonPropertyDescription("""
+                PLAN 일 때, 위 항목들로 표현되지 않는 구체적 요구가 있으면 true.
                 예: '미술관 위주로', '차 없이 대중교통만', '비건 식당 위주'.
                 단순히 도시·기간·예산·동행만 말했다면 false""")
         boolean hasExtraRequirements
 ) {
+
+    public enum Intent {
+        PLAN, DISCOVER
+    }
+
+    /** 목적지를 실제로 알아냈는지. 모델이 null 이나 공백을 줄 수 있어 여기서 막는다. */
+    public boolean hasDestination() {
+        return destination != null && !destination.isBlank();
+    }
+
+    /** intent 가 비어 있어도(구형 응답) 목적지 유무로 판단할 수 있게 한다. */
+    public boolean isDiscovery() {
+        return intent == Intent.DISCOVER || !hasDestination();
+    }
 }

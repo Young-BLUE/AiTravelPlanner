@@ -14,7 +14,9 @@ import com.wayfarer.plan.cache.ItineraryCacheEntity;
 import com.wayfarer.plan.cache.ItineraryCacheRepository;
 import com.wayfarer.plan.dto.Itinerary;
 import com.wayfarer.plan.dto.PlanParams;
+import com.wayfarer.plan.dto.PlanResponse;
 import com.wayfarer.plan.dto.PlanResult;
+import com.wayfarer.plan.dto.Suggestions;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -59,6 +61,22 @@ public class PlanService {
      */
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
+    /** 목적지 추천용 고정 프롬프트. 일정용과 마찬가지로 캐싱되므로 조립하지 말 것. */
+    private static final String DISCOVER_PROMPT = """
+            당신은 한국인 여행자에게 목적지를 추천하는 여행 상담사입니다.
+            사용자가 아직 갈 곳을 정하지 못했을 때, 조건에 맞는 도시를 골라 줍니다.
+
+            원칙:
+            - 한국에서 직항이나 1회 경유로 갈 수 있는 도시를 우선합니다.
+            - 4~6곳을 추천하되 성격이 겹치지 않게 고릅니다.
+              (예: 눈 오는 곳만 다섯 곳이 아니라 설경, 온천, 따뜻한 휴양지를 섞습니다)
+            - 왜 그 시기에 그곳이 좋은지 날씨나 행사 같은 근거를 답니다.
+            - 예상 경비는 항공과 숙박을 포함한 1인 기준 원화 정수입니다.
+            - 예산이 주어졌다면 그 범위 안의 도시만 고릅니다.
+            - planPrompt 는 반드시 '<도시> <숙박>박 <숙박+1>일 여행' 형식으로만 씁니다.
+            - 모든 텍스트는 한국어로 작성합니다.
+            """;
+
     private final AnthropicClient anthropicClient;
     private final PromptExtractor promptExtractor;
     private final ItineraryCacheRepository cacheRepository;
@@ -80,11 +98,17 @@ public class PlanService {
     public PlanResult generate(String userPrompt) {
         PlanParams params = promptExtractor.extract(userPrompt);
 
+        // 갈 곳을 아직 안 정했으면 일정이 아니라 목적지 추천을 돌려준다.
+        // 여기서 걸러내지 않으면 모델이 임의로 도시 하나를 골라 일정을 짜버린다.
+        if (params.isDiscovery()) {
+            return discover(userPrompt, params);
+        }
+
         // 4개 축으로 표현되지 않는 요구("미술관 위주로")가 있으면 캐시를 건너뛴다.
         // 캐시 키가 그 요구를 담지 못하므로, 재사용하면 엉뚱한 일정을 주게 된다.
         if (params.hasExtraRequirements()) {
             log.debug("추가 요구가 있어 캐시를 사용하지 않음");
-            return new PlanResult(callClaude(userPrompt), false);
+            return new PlanResult(PlanResponse.of(callClaude(userPrompt)), false);
         }
 
         CacheKey key = CacheKey.from(params, LocalDate.now());
@@ -94,7 +118,8 @@ public class PlanService {
             ItineraryCacheEntity entity = cached.get();
             entity.recordHit();
             log.info("캐시 HIT [{}] - 누적 {}회", key.asString(), entity.getHitCount());
-            return new PlanResult(deserialize(entity.getPayload()), true);
+            return new PlanResult(
+                    PlanResponse.of(deserialize(entity.getPayload(), Itinerary.class)), true);
         }
 
         log.info("캐시 MISS [{}] - 생성 시작", key.asString());
@@ -105,7 +130,63 @@ public class PlanService {
                 entity -> entity.refresh(payload),
                 () -> cacheRepository.save(new ItineraryCacheEntity(key, payload)));
 
-        return new PlanResult(itinerary, false);
+        return new PlanResult(PlanResponse.of(itinerary), false);
+    }
+
+    /** 목적지 추천. 일정보다 출력이 짧아 더 싸고 빠르며, 조합이 적어 캐시가 잘 맞는다. */
+    private PlanResult discover(String userPrompt, PlanParams params) {
+        CacheKey key = CacheKey.forDiscovery(params, LocalDate.now());
+        Optional<ItineraryCacheEntity> cached = cacheRepository.findByCacheKey(key.asString());
+
+        if (cached.isPresent() && !cached.get().isExpired(ttlDays)) {
+            ItineraryCacheEntity entity = cached.get();
+            entity.recordHit();
+            log.info("추천 캐시 HIT [{}] - 누적 {}회", key.asString(), entity.getHitCount());
+            return new PlanResult(
+                    PlanResponse.of(deserialize(entity.getPayload(), Suggestions.class)), true);
+        }
+
+        log.info("추천 캐시 MISS [{}] - 생성 시작", key.asString());
+        Suggestions suggestions = callClaudeForSuggestions(userPrompt);
+
+        String payload = serialize(suggestions);
+        cached.ifPresentOrElse(
+                entity -> entity.refresh(payload),
+                () -> cacheRepository.save(new ItineraryCacheEntity(key, payload)));
+
+        return new PlanResult(PlanResponse.of(suggestions), false);
+    }
+
+    private Suggestions callClaudeForSuggestions(String userPrompt) {
+        StructuredMessageCreateParams<Suggestions> params = MessageCreateParams.builder()
+                .model(model)
+                .maxTokens(maxTokens)
+                .systemOfTextBlockParams(List.of(
+                        TextBlockParam.builder()
+                                .text(DISCOVER_PROMPT)
+                                .cacheControl(CacheControlEphemeral.builder().build())
+                                .build()
+                ))
+                .outputConfig(StructuredOutputConfig.<Suggestions>builder()
+                        .format(Suggestions.class)
+                        .effort(OutputConfig.Effort.of(effort))
+                        .build())
+                .addUserMessage(userPrompt)
+                .build();
+
+        var message = anthropicClient.messages().create(params);
+
+        log.debug("추천 생성 완료 (effort={}) - 입력 {} / 캐시읽기 {} / 출력 {} 토큰",
+                effort,
+                message.usage().inputTokens(),
+                message.usage().cacheReadInputTokens().orElse(0L),
+                message.usage().outputTokens());
+
+        return message.content().stream()
+                .flatMap(block -> block.text().stream())
+                .map(text -> text.text())
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("모델이 추천을 반환하지 않았습니다."));
     }
 
     /** 캐시를 거치지 않고 항상 새로 생성한다. 시드 생성기가 쓴다. */
@@ -147,20 +228,19 @@ public class PlanService {
                 .orElseThrow(() -> new IllegalStateException("모델이 일정을 반환하지 않았습니다."));
     }
 
-    private String serialize(Itinerary itinerary) {
+    private String serialize(Object value) {
         try {
-            return OBJECT_MAPPER.writeValueAsString(itinerary);
+            return OBJECT_MAPPER.writeValueAsString(value);
         } catch (JsonProcessingException e) {
-            throw new IllegalStateException("일정을 저장용으로 변환하지 못했습니다.", e);
+            throw new IllegalStateException("결과를 저장용으로 변환하지 못했습니다.", e);
         }
     }
 
-    private Itinerary deserialize(String payload) {
+    private <T> T deserialize(String payload, Class<T> type) {
         try {
-            return OBJECT_MAPPER.readValue(payload, Itinerary.class);
+            return OBJECT_MAPPER.readValue(payload, type);
         } catch (JsonProcessingException e) {
-            // 저장 포맷이 바뀌었을 때. 캐시가 깨졌다고 요청까지 실패시킬 필요는 없다
-            throw new IllegalStateException("저장된 일정을 읽지 못했습니다.", e);
+            throw new IllegalStateException("저장된 결과를 읽지 못했습니다.", e);
         }
     }
 }

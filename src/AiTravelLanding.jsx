@@ -93,6 +93,54 @@ function MapPinIcon() {
  * 생성된 일정 표시. 지금은 히어로 아래 인라인으로 붙어 있고,
  * 라우팅 추가 시 별도 결과 페이지로 분리할 예정.
  */
+/** 목적지를 아직 안 정한 요청에 대한 추천 목록. 카드를 누르면 일정 생성으로 이어진다. */
+function SuggestionsResult({ data, onPick, disabled }) {
+  return (
+    <section className="atl-section atl-result">
+      <div className="atl-section-head">
+        <h2>{data.theme}</h2>
+        <p>마음에 드는 곳을 고르면 일정까지 짜드려요</p>
+      </div>
+
+      <ul className="atl-suggest-grid">
+        {data.destinations.map((d) => (
+          <li className="atl-suggest-card" key={`${d.city}-${d.country}`}>
+            <div className="atl-suggest-head">
+              <p className="atl-suggest-city">
+                {d.city}
+                <span className="atl-suggest-country">{d.country}</span>
+              </p>
+              <span className="atl-suggest-season">{d.bestSeason}</span>
+            </div>
+
+            <p className="atl-suggest-reason">{d.reason}</p>
+
+            <ul className="atl-suggest-highlights">
+              {d.highlights.map((h) => (
+                <li key={h}>{h}</li>
+              ))}
+            </ul>
+
+            <div className="atl-suggest-foot">
+              <span className="atl-suggest-budget">
+                {d.nights}박 {d.nights + 1}일 · {krw(d.estBudgetKrw)}
+              </span>
+              <button
+                type="button"
+                className="atl-suggest-btn"
+                onClick={() => onPick(d.planPrompt)}
+                disabled={disabled}
+              >
+                일정 짜기
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 export function ItineraryResult({ data }) {
   return (
     <section className="atl-section atl-result">
@@ -178,35 +226,48 @@ export default function AiTravelLanding() {
   const [prompt, setPrompt] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [itinerary, setItinerary] = useState(null);
+  const [result, setResult] = useState(null);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!prompt.trim() || loading) return;
+  // 추천 카드에서 곧바로 일정을 이어 만들 수 있어야 해서 프롬프트를 인자로 받는다
+  const requestPlan = async (text) => {
+    const query = (text ?? prompt).trim();
+    if (!query || loading) return;
 
     setLoading(true);
     setError('');
-    setItinerary(null);
+    setResult(null);
 
     try {
       const res = await fetch('/api/plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt: query }),
       });
 
       if (!res.ok) {
         // 서버가 내려주는 사용자용 메시지를 그대로 노출한다
         const body = await res.json().catch(() => ({}));
-        throw new Error(body.message || '일정을 만들지 못했어요. 다시 시도해 주세요.');
+        throw new Error(body.message || '결과를 만들지 못했어요. 다시 시도해 주세요.');
       }
 
-      setItinerary(await res.json());
+      setResult(await res.json());
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    requestPlan();
+  };
+
+  // 추천 카드를 누르면 그 도시로 일정 생성을 이어간다
+  const handlePickDestination = (planPrompt) => {
+    setPrompt(planPrompt);
+    requestPlan(planPrompt);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -265,11 +326,14 @@ export default function AiTravelLanding() {
             ))}
           </div>
 
-          {loading && <p className="atl-status">AI가 일정을 짜고 있어요. 2분 정도 걸려요.</p>}
+          {loading && <p className="atl-status">AI가 답을 만들고 있어요. 최대 2분 정도 걸려요.</p>}
           {error && <p className="atl-status atl-status-error" role="alert">{error}</p>}
         </section>
 
-        {itinerary && <ItineraryResult data={itinerary} />}
+        {result?.type === 'ITINERARY' && <ItineraryResult data={result.itinerary} />}
+        {result?.type === 'SUGGESTIONS' && (
+          <SuggestionsResult data={result.suggestions} onPick={handlePickDestination} disabled={loading} />
+        )}
 
         {/* Top5 인기 여행지 */}
         <section className="atl-section" id="top5">

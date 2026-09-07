@@ -1,7 +1,7 @@
 package com.wayfarer.plan;
 
-import com.wayfarer.plan.dto.Itinerary;
 import com.wayfarer.plan.dto.PlanRequest;
+import com.wayfarer.plan.dto.PlanResponse;
 import com.wayfarer.plan.dto.PlanResult;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,11 +21,15 @@ public class PlanController {
 
     private final PlanService planService;
 
+    /**
+     * 목적지가 정해졌으면 일정을, 아직 고르는 중이면 목적지 추천을 돌려준다.
+     * 어느 쪽인지는 응답의 type 필드로 구분한다.
+     */
     @PostMapping("/plan")
-    public ResponseEntity<Itinerary> plan(@Valid @RequestBody PlanRequest request) {
+    public ResponseEntity<PlanResponse> plan(@Valid @RequestBody PlanRequest request) {
         PlanResult result = planService.generate(request.prompt());
         return ResponseEntity.ok()
                 .header(CACHE_HEADER, result.cacheHit() ? "HIT" : "MISS")
-                .body(result.itinerary());
+                .body(result.response());
     }
 }
