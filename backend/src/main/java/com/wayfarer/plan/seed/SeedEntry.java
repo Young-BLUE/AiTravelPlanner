@@ -4,6 +4,7 @@ package com.wayfarer.plan.seed;
 public record SeedEntry(
         String cacheKey,
         String destination,
+        String airport,
         int nights,
         String budgetBand,
         String companion,

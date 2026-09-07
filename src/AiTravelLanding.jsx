@@ -235,6 +235,7 @@ function FeatureIcon({ children }) {
 
 const EMPTY_FORM = {
   destination: '',
+  airport: '',
   nights: 3,
   companion: '',
   budget: '',
@@ -286,7 +287,7 @@ function CityInput({ value, onChange, disabled }) {
 
   const pick = (city) => {
     skipFetch.current = true;
-    onChange(city.city);
+    onChange(city.city, city);
     setOpen(false);
   };
 
@@ -318,7 +319,7 @@ function CityInput({ value, onChange, disabled }) {
         value={value}
         disabled={disabled}
         onChange={(e) => {
-          onChange(e.target.value);
+          onChange(e.target.value, null);
           setOpen(true);
         }}
         onFocus={() => setOpen(true)}
@@ -356,10 +357,33 @@ export default function AiTravelLanding() {
   const [prompt, setPrompt] = useState('');
   const [form, setForm] = useState(EMPTY_FORM);
   const [showLongStay, setShowLongStay] = useState(false);
+  const [airports, setAirports] = useState([]);
   const [customBudget, setCustomBudget] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
+
+  // 목적지가 바뀌면 그 도시의 공항 목록을 맞춰 둔다.
+  // 목록에서 고른 경우와 직접 타이핑한 경우를 한 곳에서 처리한다
+  useEffect(() => {
+    const name = form.destination.trim();
+    if (!name) {
+      setAirports([]);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/cities?q=${encodeURIComponent(name)}&limit=1`);
+        if (!res.ok) return;
+        const [top] = await res.json();
+        // 정확히 일치할 때만 공항을 보여준다. "도"만 친 상태에서 도쿄 공항이 뜨면 안 된다
+        setAirports(top && top.city === name ? top.airports : []);
+      } catch {
+        setAirports([]);
+      }
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [form.destination]);
 
   // 자유 입력과 조건 선택이 같은 엔드포인트를 쓴다.
   // 추천 카드 클릭처럼 프롬프트가 이미 정해진 경우도 여기로 들어온다
@@ -516,9 +540,31 @@ export default function AiTravelLanding() {
                 <label htmlFor="atl-dest">어디로 가시나요?</label>
                 <CityInput
                   value={form.destination}
-                  onChange={(v) => setForm({ ...form, destination: v })}
+                  onChange={(v) => setForm({ ...form, destination: v, airport: '' })}
                   disabled={loading}
                 />
+
+                {airports.length > 0 && (
+                  <div className="atl-airports">
+                    <span className="atl-airport-label">도착 공항</span>
+                    <div className="atl-opts">
+                      {airports.map((a) => (
+                        <button
+                          type="button"
+                          key={a.code}
+                          className={`atl-opt atl-opt-air ${form.airport === a.name ? 'is-on' : ''}`}
+                          onClick={() =>
+                            setForm({ ...form, airport: form.airport === a.name ? '' : a.name })
+                          }
+                          title={a.note}
+                        >
+                          {a.name}
+                          <em>{a.note}</em>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="atl-field">

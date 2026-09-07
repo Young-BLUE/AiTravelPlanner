@@ -21,6 +21,11 @@ public record PlanParams(
         @JsonPropertyDescription("숙박 일수. '3박 4일'이면 3. 언급이 없으면 3")
         int nights,
 
+        @JsonPropertyDescription("""
+                도착 공항이 문장에 드러나면 그 이름. 예: '나리타로 들어가서'면 '나리타'.
+                언급이 없으면 빈 문자열""")
+        String airport,
+
         @JsonPropertyDescription("1인 예산 (원화 정수). 언급이 없으면 0")
         int budgetKrw,
 

@@ -29,6 +29,18 @@ public class CitySeedLoader implements ApplicationRunner {
 
     private final CityRepository cityRepository;
 
+    @SuppressWarnings("unchecked")
+    private static List<Airport> toAirports(Object raw) {
+        if (!(raw instanceof List<?> list)) {
+            return List.of();
+        }
+        return list.stream()
+                .map(item -> (Map<String, Object>) item)
+                .map(m -> new Airport((String) m.get("code"), (String) m.get("nameKo"),
+                        (String) m.get("note")))
+                .toList();
+    }
+
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
@@ -58,7 +70,8 @@ public class CitySeedLoader implements ApplicationRunner {
                         (String) row.get("nameEn"),
                         (String) row.get("country"),
                         (String) row.get("chosung"),
-                        ((Number) row.get("popularity")).intValue()))
+                        ((Number) row.get("popularity")).intValue(),
+                        toAirports(row.get("airports"))))
                 .toList();
 
         if (!toSave.isEmpty()) {

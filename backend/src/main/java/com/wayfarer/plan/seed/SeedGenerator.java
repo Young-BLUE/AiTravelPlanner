@@ -59,7 +59,7 @@ public class SeedGenerator implements ApplicationRunner {
 
     private static CacheKey keyOf(SeedCombos.Combo combo) {
         return CacheKey.from(new PlanParams(PlanParams.Intent.PLAN, combo.destination(),
-                combo.nights(), combo.budgetKrw(), "미지정", java.util.List.of(),
+                combo.nights(), "", combo.budgetKrw(), "미지정", java.util.List.of(),
                 "무관", false), LocalDate.now());
     }
 
@@ -120,7 +120,7 @@ public class SeedGenerator implements ApplicationRunner {
                     try {
                         Itinerary itinerary = planService.generateFresh(combo.prompt());
                         CacheKey key = keyOf(combo);
-                        results.add(new SeedEntry(key.asString(), key.destination(), key.nights(),
+                        results.add(new SeedEntry(key.asString(), key.destination(), key.airport(), key.nights(),
                                 key.budgetBand(), key.companion(), key.interestKey(), key.season(),
                                 OBJECT_MAPPER.writeValueAsString(itinerary)));
                         log.info("[{}/{}] 완료 - {}", done.incrementAndGet(), total, key.asString());

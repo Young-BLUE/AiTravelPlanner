@@ -19,7 +19,7 @@ import java.util.TreeSet;
  * 그래서 결과를 실제로 바꾸는 것(동행, 관심사)만 넣고
  * 고유값이 많은 것(숙소 위치, 자유 텍스트)은 키에 넣지 않고 캐시를 우회시킨다.
  */
-public record CacheKey(String destination, int nights, String budgetBand,
+public record CacheKey(String destination, String airport, int nights, String budgetBand,
                        String companion, String interestKey, String season) {
 
     private static final int BAND_UNIT = 500_000;
@@ -43,6 +43,7 @@ public record CacheKey(String destination, int nights, String budgetBand,
         }
         return new CacheKey(
                 params.destination().trim(),
+                airport(params.airport()),
                 params.nights(),
                 budgetBand(params.budgetKrw()),
                 companion(params.companion()),
@@ -57,6 +58,7 @@ public record CacheKey(String destination, int nights, String budgetBand,
     public static CacheKey forDiscovery(PlanParams params, LocalDate today) {
         return new CacheKey(
                 "@추천",
+                "미지정",
                 0,
                 budgetBand(params.budgetKrw()),
                 companion(params.companion()),
@@ -76,6 +78,14 @@ public record CacheKey(String destination, int nights, String budgetBand,
         int lower = band * BAND_UNIT / 10_000;
         int upper = (band + 1) * BAND_UNIT / 10_000;
         return lower + "-" + upper + "만원";
+    }
+
+    /**
+     * 도착 공항. 나리타와 하네다는 도심까지 60분 차이라 첫날·마지막날 일정이 달라진다.
+     * 공항이 하나뿐인 도시는 항상 미지정이라 조합이 늘지 않는다.
+     */
+    private static String airport(String airport) {
+        return airport == null || airport.isBlank() ? "미지정" : airport.trim();
     }
 
     /** 가족 여행과 친구 여행은 장소 구성이 실제로 달라져서 키에 넣는다. */
@@ -125,7 +135,7 @@ public record CacheKey(String destination, int nights, String budgetBand,
 
     /** DB 유니크 컬럼에 그대로 넣는 값. 해시가 아니라 사람이 읽을 수 있게 둔다 (디버깅·통계용). */
     public String asString() {
-        return String.join("|", destination, String.valueOf(nights),
+        return String.join("|", destination, airport, String.valueOf(nights),
                 budgetBand, companion, interestKey, season);
     }
 }

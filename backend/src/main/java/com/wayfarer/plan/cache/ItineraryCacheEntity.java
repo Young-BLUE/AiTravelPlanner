@@ -30,6 +30,7 @@ public class ItineraryCacheEntity {
 
     // 키를 쪼갠 컬럼들. 조회에는 안 쓰지만 "어떤 조합이 인기인지" 통계를 내려면 필요하다
     private String destination;
+    private String airport;
     private int nights;
     private String budgetBand;
     private String companion;
@@ -48,6 +49,7 @@ public class ItineraryCacheEntity {
     public ItineraryCacheEntity(CacheKey key, String payload) {
         this.cacheKey = key.asString();
         this.destination = key.destination();
+        this.airport = key.airport();
         this.nights = key.nights();
         this.budgetBand = key.budgetBand();
         this.companion = key.companion();
@@ -63,6 +65,7 @@ public class ItineraryCacheEntity {
         ItineraryCacheEntity e = new ItineraryCacheEntity();
         e.cacheKey = entry.cacheKey();
         e.destination = entry.destination();
+        e.airport = entry.airport();
         e.nights = entry.nights();
         e.budgetBand = entry.budgetBand();
         e.companion = entry.companion();

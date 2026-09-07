@@ -50,6 +50,9 @@ public class PlanService {
             - 장소의 운영시간과 휴무일을 고려해 배치합니다. 정기 휴무나 야간 운영처럼
               방문 시각에 영향을 주는 조건은 description 에 함께 적습니다.
             - 마지막 날은 공항까지 가는 시간을 확보하고, 마지막 일정을 공항 도착으로 끝냅니다.
+            - 도착 공항이 지정되면 첫날과 마지막 날 모두 그 공항을 기준으로 삼고,
+              공항에서 도심까지의 실제 이동 수단과 소요시간을 반영합니다.
+              같은 도시라도 공항에 따라 접근 시간이 크게 다르므로 첫날 일정 밀도를 조절합니다.
             - 모든 금액은 한국 원화 정수로 적습니다. 최근 시세 기준의 대략적인 추정치입니다.
             - 사용자가 기간을 밝히지 않았다면 3박 4일로 가정합니다.
             - 예산을 밝혔다면 그 범위 안에서 장소와 숙소 등급을 고릅니다.
@@ -154,6 +157,7 @@ public class PlanService {
                 PlanParams.Intent.PLAN,
                 request.destination().trim(),
                 request.nights() == null || request.nights() <= 0 ? 3 : request.nights(),
+                request.airport(),
                 resolveBudget(request),
                 request.companion(),
                 request.interests() == null ? List.of() : request.interests(),
@@ -191,6 +195,10 @@ public class PlanService {
         int nights = request.nights() == null || request.nights() <= 0 ? 3 : request.nights();
         sb.append(request.destination().trim())
                 .append(' ').append(nights).append("박 ").append(nights + 1).append("일 여행");
+
+        if (notBlank(request.airport())) {
+            sb.append(", 도착 공항: ").append(request.airport().trim());
+        }
 
         if (notBlank(request.companion())) {
             sb.append(", 동행: ").append(request.companion().trim());

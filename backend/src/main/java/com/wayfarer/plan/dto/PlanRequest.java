@@ -23,6 +23,10 @@ public record PlanRequest(
 
         Integer nights,
 
+        /** 도착 공항 이름. 공항이 둘 이상인 도시에서만 의미가 있다 (나리타 / 하네다) */
+        @Size(max = 30, message = "공항명이 너무 깁니다.")
+        String airport,
+
         /** 혼자 / 연인 / 친구 / 가족. 비우면 미지정 */
         String companion,
 

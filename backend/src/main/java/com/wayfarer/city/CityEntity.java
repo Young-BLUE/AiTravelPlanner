@@ -1,7 +1,12 @@
 package com.wayfarer.city;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OrderColumn;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -10,6 +15,9 @@ import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -38,11 +46,19 @@ public class CityEntity {
     /** 한국인 여행 수요 기준 정렬 가중치. 클수록 위에 노출된다. */
     private int popularity;
 
-    public CityEntity(String nameKo, String nameEn, String country, String chosung, int popularity) {
+    /** 공항이 둘 이상인 도시만 채운다. 하나뿐이면 고르게 할 이유가 없다. */
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "city_airport", joinColumns = @JoinColumn(name = "city_id"))
+    @OrderColumn(name = "sort_order")
+    private List<Airport> airports = new ArrayList<>();
+
+    public CityEntity(String nameKo, String nameEn, String country, String chosung,
+                      int popularity, List<Airport> airports) {
         this.nameKo = nameKo;
         this.nameEn = nameEn;
         this.country = country;
         this.chosung = chosung;
         this.popularity = popularity;
+        this.airports = airports == null ? new ArrayList<>() : new ArrayList<>(airports);
     }
 }
