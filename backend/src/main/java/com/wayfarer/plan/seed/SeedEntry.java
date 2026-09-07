@@ -6,7 +6,8 @@ public record SeedEntry(
         String destination,
         int nights,
         String budgetBand,
-        String style,
+        String companion,
+        String interestKey,
         String season,
         String payload
 ) {

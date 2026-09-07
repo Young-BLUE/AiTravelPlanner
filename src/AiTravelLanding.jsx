@@ -11,6 +11,15 @@ const TOP_DESTINATIONS = [
   { rank: 5, city: '뉴욕', country: '미국', landmark: '타임스스퀘어', img: '/destinations/newyork.jpg', tag: '5박 7일 · 250만원대' },
 ];
 
+// 캐시 키에 그대로 들어가므로 백엔드 CacheKey.KNOWN_* 와 값이 일치해야 한다
+const COMPANIONS = ['혼자', '연인', '친구', '가족'];
+const BUDGETS = ['가성비', '보통', '프리미엄'];
+const INTERESTS = ['관광', '맛집', '쇼핑', '카페', '야경', '애니메이션', '자연', '테마파크'];
+const NIGHTS = [1, 2, 3, 4, 5];
+
+// 관심사는 고를수록 캐시 조합이 곱으로 늘어난다. 3개로 제한해 히트율을 지킨다
+const MAX_INTERESTS = 3;
+
 const QUICK_PROMPTS = [
   '3박 4일 도쿄, 예산 80만원',
   '아이와 함께 가는 오사카',
@@ -222,16 +231,28 @@ function FeatureIcon({ children }) {
   );
 }
 
+const EMPTY_FORM = {
+  destination: '',
+  nights: 3,
+  companion: '',
+  budget: '',
+  interests: [],
+  hotelArea: '',
+  extra: '',
+};
+
 export default function AiTravelLanding() {
+  const [mode, setMode] = useState('free'); // free | form
   const [prompt, setPrompt] = useState('');
+  const [form, setForm] = useState(EMPTY_FORM);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
 
-  // 추천 카드에서 곧바로 일정을 이어 만들 수 있어야 해서 프롬프트를 인자로 받는다
-  const requestPlan = async (text) => {
-    const query = (text ?? prompt).trim();
-    if (!query || loading) return;
+  // 자유 입력과 조건 선택이 같은 엔드포인트를 쓴다.
+  // 추천 카드 클릭처럼 프롬프트가 이미 정해진 경우도 여기로 들어온다
+  const requestPlan = async (payload) => {
+    if (loading) return;
 
     setLoading(true);
     setError('');
@@ -241,7 +262,7 @@ export default function AiTravelLanding() {
       const res = await fetch('/api/plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: query }),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
@@ -260,13 +281,35 @@ export default function AiTravelLanding() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    requestPlan();
+    if (!prompt.trim()) return;
+    requestPlan({ prompt: prompt.trim() });
+  };
+
+  // 목적지를 직접 골랐으므로 서버가 추출 호출 없이 바로 생성한다
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+    if (!form.destination.trim()) return;
+    requestPlan({ ...form, destination: form.destination.trim() });
+  };
+
+  const toggleInterest = (interest) => {
+    setForm((prev) => {
+      const has = prev.interests.includes(interest);
+      if (!has && prev.interests.length >= MAX_INTERESTS) return prev;
+      return {
+        ...prev,
+        interests: has
+          ? prev.interests.filter((i) => i !== interest)
+          : [...prev.interests, interest],
+      };
+    });
   };
 
   // 추천 카드를 누르면 그 도시로 일정 생성을 이어간다
   const handlePickDestination = (planPrompt) => {
     setPrompt(planPrompt);
-    requestPlan(planPrompt);
+    setMode('free');
+    requestPlan({ prompt: planPrompt });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -300,31 +343,177 @@ export default function AiTravelLanding() {
             목적지·기간·예산만 입력하면 일자별 코스와 예상 경비를 한 번에 정리해 드려요.
           </p>
 
-          <form className="atl-prompt-box" onSubmit={handleSubmit}>
-            <textarea
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="떠나고 싶은 여행지, 계획을 세워보세요"
-              rows={2}
-            />
-            <button type="submit" className="atl-submit" aria-label="일정 만들기" disabled={loading || !prompt.trim()}>
-              {loading ? (
-                <span className="atl-spinner" aria-hidden="true" />
-              ) : (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M5 12h13M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              )}
+          <div className="atl-tabs" role="tablist">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === 'free'}
+              className={`atl-tab ${mode === 'free' ? 'is-active' : ''}`}
+              onClick={() => setMode('free')}
+            >
+              자유롭게 입력
             </button>
-          </form>
-
-          <div className="atl-chips">
-            {QUICK_PROMPTS.map((q) => (
-              <button type="button" key={q} className="atl-chip" onClick={() => setPrompt(q)} disabled={loading}>
-                {q}
-              </button>
-            ))}
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === 'form'}
+              className={`atl-tab ${mode === 'form' ? 'is-active' : ''}`}
+              onClick={() => setMode('form')}
+            >
+              조건 선택
+            </button>
           </div>
+
+          {mode === 'free' ? (
+            <>
+              <form className="atl-prompt-box" onSubmit={handleSubmit}>
+                <textarea
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  placeholder="떠나고 싶은 여행지, 계획을 세워보세요"
+                  rows={2}
+                />
+                <button type="submit" className="atl-submit" aria-label="일정 만들기" disabled={loading || !prompt.trim()}>
+                  {loading ? (
+                    <span className="atl-spinner" aria-hidden="true" />
+                  ) : (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M5 12h13M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                </button>
+              </form>
+
+              <div className="atl-chips">
+                {QUICK_PROMPTS.map((q) => (
+                  <button type="button" key={q} className="atl-chip" onClick={() => setPrompt(q)} disabled={loading}>
+                    {q}
+                  </button>
+                ))}
+              </div>
+            </>
+          ) : (
+            <form className="atl-form" onSubmit={handleFormSubmit}>
+              <div className="atl-field">
+                <label htmlFor="atl-dest">어디로 가시나요?</label>
+                <input
+                  id="atl-dest"
+                  type="text"
+                  value={form.destination}
+                  onChange={(e) => setForm({ ...form, destination: e.target.value })}
+                  placeholder="도쿄, 다낭, 방콕..."
+                  maxLength={40}
+                />
+              </div>
+
+              <div className="atl-field-row">
+                <div className="atl-field">
+                  <label htmlFor="atl-nights">기간</label>
+                  <select
+                    id="atl-nights"
+                    value={form.nights}
+                    onChange={(e) => setForm({ ...form, nights: Number(e.target.value) })}
+                  >
+                    {NIGHTS.map((n) => (
+                      <option key={n} value={n}>
+                        {n}박 {n + 1}일
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="atl-field">
+                  <span className="atl-field-label">동행</span>
+                  <div className="atl-opts">
+                    {COMPANIONS.map((c) => (
+                      <button
+                        type="button"
+                        key={c}
+                        className={`atl-opt ${form.companion === c ? 'is-on' : ''}`}
+                        onClick={() => setForm({ ...form, companion: form.companion === c ? '' : c })}
+                      >
+                        {c}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="atl-field">
+                <span className="atl-field-label">예산</span>
+                <div className="atl-opts">
+                  {BUDGETS.map((b) => (
+                    <button
+                      type="button"
+                      key={b}
+                      className={`atl-opt ${form.budget === b ? 'is-on' : ''}`}
+                      onClick={() => setForm({ ...form, budget: form.budget === b ? '' : b })}
+                    >
+                      {b}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="atl-field">
+                <span className="atl-field-label">
+                  관심사
+                  <em>최대 {MAX_INTERESTS}개</em>
+                </span>
+                <div className="atl-opts">
+                  {INTERESTS.map((i) => {
+                    const on = form.interests.includes(i);
+                    const full = !on && form.interests.length >= MAX_INTERESTS;
+                    return (
+                      <button
+                        type="button"
+                        key={i}
+                        className={`atl-opt ${on ? 'is-on' : ''}`}
+                        onClick={() => toggleInterest(i)}
+                        disabled={full}
+                      >
+                        {i}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <details className="atl-more">
+                <summary>숙소 위치·추가 요청 (선택)</summary>
+                <div className="atl-field">
+                  <label htmlFor="atl-hotel">숙소 위치</label>
+                  <input
+                    id="atl-hotel"
+                    type="text"
+                    value={form.hotelArea}
+                    onChange={(e) => setForm({ ...form, hotelArea: e.target.value })}
+                    placeholder="신주쿠, 시부야..."
+                    maxLength={40}
+                  />
+                </div>
+                <div className="atl-field">
+                  <label htmlFor="atl-extra">추가 요청</label>
+                  <input
+                    id="atl-extra"
+                    type="text"
+                    value={form.extra}
+                    onChange={(e) => setForm({ ...form, extra: e.target.value })}
+                    placeholder="디즈니랜드는 꼭 가고 싶어요"
+                    maxLength={300}
+                  />
+                </div>
+              </details>
+
+              <button
+                type="submit"
+                className="atl-form-submit"
+                disabled={loading || !form.destination.trim()}
+              >
+                {loading ? '일정을 짜는 중...' : '일정 만들기'}
+              </button>
+            </form>
+          )}
 
           {loading && <p className="atl-status">AI가 답을 만들고 있어요. 최대 2분 정도 걸려요.</p>}
           {error && <p className="atl-status atl-status-error" role="alert">{error}</p>}

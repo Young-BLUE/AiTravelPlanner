@@ -3,6 +3,9 @@ package com.wayfarer.plan.cache;
 import com.wayfarer.plan.dto.PlanParams;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * 캐시 키 정규화.
@@ -10,14 +13,29 @@ import java.time.LocalDate;
  * 프롬프트 원문을 해시하면 "도쿄 3박4일 여행"과 "도쿄로 3박4일 다녀오려고 해"가
  * 서로 다른 키가 되어 히트율이 사실상 0이 된다. 의미가 같은 요청을 한 칸에 모으는 것이
  * 이 클래스의 전부다.
+ *
+ * 축을 늘리면 결과는 정확해지지만 조합이 곱으로 늘어 히트율이 떨어진다.
+ * HIT 는 0.3원이고 MISS 는 128원이라, 축 하나를 더하는 건 비용 결정이기도 하다.
+ * 그래서 결과를 실제로 바꾸는 것(동행, 관심사)만 넣고
+ * 고유값이 많은 것(숙소 위치, 자유 텍스트)은 키에 넣지 않고 캐시를 우회시킨다.
  */
-public record CacheKey(String destination, int nights, String budgetBand, String style, String season) {
+public record CacheKey(String destination, int nights, String budgetBand,
+                       String companion, String interestKey, String season) {
 
     private static final int BAND_UNIT = 500_000;
 
+    private static final Set<String> KNOWN_THEMES = Set.of(
+            "겨울", "봄", "여름", "가을", "따뜻한곳", "시원한곳",
+            "휴양", "도시", "자연", "미식", "무관");
+
+    private static final Set<String> KNOWN_COMPANIONS = Set.of("혼자", "연인", "친구", "가족");
+
+    public static final List<String> KNOWN_INTERESTS = List.of(
+            "관광", "맛집", "쇼핑", "카페", "야경", "애니메이션", "자연", "테마파크");
+
     /**
      * 일정 캐시 키. 목적지가 없으면 만들 수 없다 - 목적지 없는 요청이 전부
-     * "|3|미지정|일반|가을" 이라는 한 칸을 공유해서 서로 남의 답을 받게 된다.
+     * 한 칸을 공유해서 서로 남의 답을 받게 된다.
      */
     public static CacheKey from(PlanParams params, LocalDate today) {
         if (!params.hasDestination()) {
@@ -27,7 +45,8 @@ public record CacheKey(String destination, int nights, String budgetBand, String
                 params.destination().trim(),
                 params.nights(),
                 budgetBand(params.budgetKrw()),
-                params.style(),
+                companion(params.companion()),
+                interestKey(params.interests()),
                 season(today.getMonthValue()));
     }
 
@@ -36,13 +55,12 @@ public record CacheKey(String destination, int nights, String budgetBand, String
      * destination 자리에 고정 문자열을 넣어 일정 키와 섞이지 않게 한다.
      */
     public static CacheKey forDiscovery(PlanParams params, LocalDate today) {
-        // 모델이 목록 밖 표현을 내놓으면 키가 흩어져 캐시가 안 맞는다. 알려진 값만 통과시킨다
-        String theme = normalizeTheme(params.discoveryTheme());
         return new CacheKey(
                 "@추천",
                 0,
                 budgetBand(params.budgetKrw()),
-                theme + "/" + params.style(),
+                companion(params.companion()),
+                normalizeTheme(params.discoveryTheme()),
                 season(today.getMonthValue()));
     }
 
@@ -60,10 +78,33 @@ public record CacheKey(String destination, int nights, String budgetBand, String
         return lower + "-" + upper + "만원";
     }
 
-    private static final java.util.Set<String> KNOWN_THEMES = java.util.Set.of(
-            "겨울", "봄", "여름", "가을", "따뜻한곳", "시원한곳",
-            "휴양", "도시", "자연", "미식", "무관");
+    /** 가족 여행과 친구 여행은 장소 구성이 실제로 달라져서 키에 넣는다. */
+    private static String companion(String companion) {
+        if (companion == null || !KNOWN_COMPANIONS.contains(companion.trim())) {
+            return "미지정";
+        }
+        return companion.trim();
+    }
 
+    /**
+     * 관심사는 정렬해 전부 키에 넣는다. 일부만 넣으면 "맛집+쇼핑"으로 만든 일정을
+     * "맛집"만 고른 사람에게 주게 되어, 요청과 다른 결과를 캐시로 돌려주는 셈이 된다.
+     * 대신 선택 개수를 UI 에서 제한해 조합 폭발을 막는다.
+     */
+    private static String interestKey(List<String> interests) {
+        if (interests == null || interests.isEmpty()) {
+            return "미지정";
+        }
+        Set<String> sorted = new TreeSet<>();
+        for (String interest : interests) {
+            if (interest != null && KNOWN_INTERESTS.contains(interest.trim())) {
+                sorted.add(interest.trim());
+            }
+        }
+        return sorted.isEmpty() ? "미지정" : String.join("+", sorted);
+    }
+
+    /** 모델이 목록 밖 표현을 내놓으면 키가 흩어져 캐시가 안 맞는다. 알려진 값만 통과시킨다. */
     private static String normalizeTheme(String theme) {
         if (theme == null || theme.isBlank()) {
             return "무관";
@@ -84,6 +125,7 @@ public record CacheKey(String destination, int nights, String budgetBand, String
 
     /** DB 유니크 컬럼에 그대로 넣는 값. 해시가 아니라 사람이 읽을 수 있게 둔다 (디버깅·통계용). */
     public String asString() {
-        return String.join("|", destination, String.valueOf(nights), budgetBand, style, season);
+        return String.join("|", destination, String.valueOf(nights),
+                budgetBand, companion, interestKey, season);
     }
 }

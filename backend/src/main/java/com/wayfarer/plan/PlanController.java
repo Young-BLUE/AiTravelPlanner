@@ -27,7 +27,7 @@ public class PlanController {
      */
     @PostMapping("/plan")
     public ResponseEntity<PlanResponse> plan(@Valid @RequestBody PlanRequest request) {
-        PlanResult result = planService.generate(request.prompt());
+        PlanResult result = planService.generate(request);
         return ResponseEntity.ok()
                 .header(CACHE_HEADER, result.cacheHit() ? "HIT" : "MISS")
                 .body(result.response());

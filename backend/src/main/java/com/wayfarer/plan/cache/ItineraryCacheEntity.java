@@ -32,7 +32,8 @@ public class ItineraryCacheEntity {
     private String destination;
     private int nights;
     private String budgetBand;
-    private String style;
+    private String companion;
+    private String interestKey;
     private String season;
 
     /** Itinerary 를 직렬화한 JSON 원본. */
@@ -49,7 +50,8 @@ public class ItineraryCacheEntity {
         this.destination = key.destination();
         this.nights = key.nights();
         this.budgetBand = key.budgetBand();
-        this.style = key.style();
+        this.companion = key.companion();
+        this.interestKey = key.interestKey();
         this.season = key.season();
         this.payload = payload;
         this.hitCount = 0;
@@ -63,7 +65,8 @@ public class ItineraryCacheEntity {
         e.destination = entry.destination();
         e.nights = entry.nights();
         e.budgetBand = entry.budgetBand();
-        e.style = entry.style();
+        e.companion = entry.companion();
+        e.interestKey = entry.interestKey();
         e.season = entry.season();
         e.payload = entry.payload();
         e.hitCount = 0;

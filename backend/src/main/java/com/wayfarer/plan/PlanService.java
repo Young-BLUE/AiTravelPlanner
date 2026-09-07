@@ -14,6 +14,7 @@ import com.wayfarer.plan.cache.ItineraryCacheEntity;
 import com.wayfarer.plan.cache.ItineraryCacheRepository;
 import com.wayfarer.plan.dto.Itinerary;
 import com.wayfarer.plan.dto.PlanParams;
+import com.wayfarer.plan.dto.PlanRequest;
 import com.wayfarer.plan.dto.PlanResponse;
 import com.wayfarer.plan.dto.PlanResult;
 import com.wayfarer.plan.dto.Suggestions;
@@ -46,6 +47,9 @@ public class PlanService {
             - 하루 일정은 지리적으로 가까운 곳끼리 묶어 동선 낭비가 없게 합니다.
             - 장소 간 이동 방법과 소요시간을 moveFromPrev에 구체적으로 적습니다. 첫 장소는 빈 문자열입니다.
             - 하루 3~5곳으로 현실적인 밀도를 유지하고, 식사와 휴식을 반드시 포함합니다.
+            - 장소의 운영시간과 휴무일을 고려해 배치합니다. 정기 휴무나 야간 운영처럼
+              방문 시각에 영향을 주는 조건은 description 에 함께 적습니다.
+            - 마지막 날은 공항까지 가는 시간을 확보하고, 마지막 일정을 공항 도착으로 끝냅니다.
             - 모든 금액은 한국 원화 정수로 적습니다. 최근 시세 기준의 대략적인 추정치입니다.
             - 사용자가 기간을 밝히지 않았다면 3박 4일로 가정합니다.
             - 예산을 밝혔다면 그 범위 안에서 장소와 숙소 등급을 고릅니다.
@@ -95,8 +99,15 @@ public class PlanService {
     private int ttlDays;
 
     @Transactional
-    public PlanResult generate(String userPrompt) {
-        PlanParams params = promptExtractor.extract(userPrompt);
+    public PlanResult generate(PlanRequest request) {
+        // 조건을 직접 고른 요청은 추출할 게 없다. Haiku 호출을 건너뛰어
+        // 캐시 히트여도 무조건 나가던 1초와 0.3원을 없앤다.
+        PlanParams params = request.isStructured()
+                ? fromStructured(request)
+                : promptExtractor.extract(request.prompt());
+        String userPrompt = request.isStructured()
+                ? composePrompt(request)
+                : request.prompt();
 
         // 갈 곳을 아직 안 정했으면 일정이 아니라 목적지 추천을 돌려준다.
         // 여기서 걸러내지 않으면 모델이 임의로 도시 하나를 골라 일정을 짜버린다.
@@ -131,6 +142,68 @@ public class PlanService {
                 () -> cacheRepository.save(new ItineraryCacheEntity(key, payload)));
 
         return new PlanResult(PlanResponse.of(itinerary), false);
+    }
+
+    /** 선택한 조건을 그대로 파라미터로 옮긴다. 모델을 부르지 않으므로 표기가 흔들릴 일이 없다. */
+    private PlanParams fromStructured(PlanRequest request) {
+        // 숙소 위치와 자유 텍스트는 고유값이 많아 키에 넣으면 캐시가 무의미해진다.
+        // 대신 있으면 캐시를 건너뛰어, 요청과 다른 결과를 돌려주는 일이 없게 한다.
+        boolean hasExtra = notBlank(request.hotelArea()) || notBlank(request.extra());
+
+        return new PlanParams(
+                PlanParams.Intent.PLAN,
+                request.destination().trim(),
+                request.nights() == null || request.nights() <= 0 ? 3 : request.nights(),
+                budgetTierToKrw(request.budget()),
+                request.companion(),
+                request.interests() == null ? List.of() : request.interests(),
+                "무관",
+                hasExtra);
+    }
+
+    /**
+     * 예산 등급을 대표 금액으로 옮긴다. 캐시 키는 어차피 50만원 구간으로 뭉개므로
+     * 등급별로 구간이 갈리기만 하면 된다.
+     */
+    private int budgetTierToKrw(String tier) {
+        if (tier == null) {
+            return 0;
+        }
+        return switch (tier.trim()) {
+            case "가성비" -> 400_000;
+            case "보통" -> 900_000;
+            case "프리미엄" -> 1_600_000;
+            default -> 0;
+        };
+    }
+
+    /** 선택한 조건을 모델이 읽을 문장으로 조립한다. 규칙 기반이라 호출 비용이 없다. */
+    private String composePrompt(PlanRequest request) {
+        StringBuilder sb = new StringBuilder();
+        int nights = request.nights() == null || request.nights() <= 0 ? 3 : request.nights();
+        sb.append(request.destination().trim())
+                .append(' ').append(nights).append("박 ").append(nights + 1).append("일 여행");
+
+        if (notBlank(request.companion())) {
+            sb.append(", 동행: ").append(request.companion().trim());
+        }
+        if (notBlank(request.budget())) {
+            sb.append(", 예산: ").append(request.budget().trim());
+        }
+        if (request.interests() != null && !request.interests().isEmpty()) {
+            sb.append(", 관심사: ").append(String.join(", ", request.interests()));
+        }
+        if (notBlank(request.hotelArea())) {
+            sb.append(", 숙소: ").append(request.hotelArea().trim()).append(" 인근");
+        }
+        if (notBlank(request.extra())) {
+            sb.append("\n추가 요청: ").append(request.extra().trim());
+        }
+        return sb.toString();
+    }
+
+    private boolean notBlank(String value) {
+        return value != null && !value.isBlank();
     }
 
     /** 목적지 추천. 일정보다 출력이 짧아 더 싸고 빠르며, 조합이 적어 캐시가 잘 맞는다. */
