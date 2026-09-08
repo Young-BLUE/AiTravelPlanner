@@ -461,7 +461,7 @@ export default function AiTravelLanding() {
         <div className="atl-header-inner">
           <a className="atl-logo" href="/">
             <span className="atl-logo-mark" aria-hidden="true" />
-            Wayfarer
+            WWW
           </a>
           <nav className="atl-nav">
             <a href="#top5">인기 여행지</a>
@@ -475,7 +475,7 @@ export default function AiTravelLanding() {
       <main className="atl-main">
         {/* 히어로 + 프롬프트 입력 */}
         <section className="atl-hero">
-          <p className="atl-eyebrow">AI 여행 플래너</p>
+          <p className="atl-eyebrow">Wherever · Whatever · Whenever</p>
           <h1 className="atl-title">
             가고 싶은 여행지를 입력하고
             <br />
@@ -835,8 +835,8 @@ export default function AiTravelLanding() {
           <div className="atl-footer-brand">
             <span className="atl-logo-mark" aria-hidden="true" />
             <div>
-              <p className="atl-footer-name">Wayfarer</p>
-              <p className="atl-footer-desc">AI 여행 일정 추천 &amp; 예약 연결</p>
+              <p className="atl-footer-name">WWW</p>
+              <p className="atl-footer-desc">어디로든, 무엇이든, 언제든 — AI 여행 일정 플래너</p>
             </div>
           </div>
           <p className="atl-credits">

@@ -1,2 +1,2 @@
 org.springframework.boot.diagnostics.FailureAnalyzer=\
-com.wayfarer.config.MissingApiKeyFailureAnalyzer
+com.www.config.MissingApiKeyFailureAnalyzer

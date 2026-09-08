@@ -1,4 +1,4 @@
-# Wayfarer — AI 여행 일정 플래너
+# WWW — AI 여행 일정 플래너
 
 목적지와 조건을 입력하면 **실제로 이동 가능한 동선 중심의 일자별 여행 일정**을 만들어 주는 서비스입니다.
 
@@ -25,7 +25,7 @@ LLM을 그대로 붙이면 일정 1건에 **약 128원, 140초**가 듭니다. �
 
 ## 무엇을 만드는가
 
-일정 생성 서비스는 많지만, 대부분 "가볼 만한 곳 목록"에 가깝습니다. Wayfarer는 **동선**을
+일정 생성 서비스는 많지만, 대부분 "가볼 만한 곳 목록"에 가깝습니다. WWW는 **동선**을
 1순위로 둡니다.
 
 - 하루 일정을 지리적으로 가까운 곳끼리 묶습니다
@@ -245,7 +245,7 @@ Action:
 ### 주요 구성
 
 ```
-backend/src/main/java/com/wayfarer/
+backend/src/main/java/com/www/
   config/     AnthropicConfig, MissingApiKeyFailureAnalyzer, SpaForwardingConfig
   city/       도시 검색 (초성 인덱스), 공항 정보
   plan/       PlanController, PlanService, PromptExtractor, ApiExceptionHandler
@@ -262,7 +262,7 @@ src/          React 랜딩 · 결과 화면
 | `POST` | `/api/plan` | 일정 생성 또는 목적지 추천. 응답 `type`으로 구분 |
 | `GET` | `/api/cities?q=` | 도시 자동완성 (한글·영문·초성) |
 
-응답 헤더 `X-Wayfarer-Cache: HIT \| MISS`로 캐시 적중 여부를 확인할 수 있습니다.
+응답 헤더 `X-WWW-Cache: HIT \| MISS`로 캐시 적중 여부를 확인할 수 있습니다.
 
 ---
 
@@ -333,12 +333,12 @@ java -jar build/libs/backend-0.0.1-SNAPSHOT.jar     # http://localhost:8080
 
 ```bash
 # 추론 강도 변경 (low / medium / high / xhigh / max, 기본 high)
-WAYFARER_EFFORT=medium java -jar build/libs/backend-0.0.1-SNAPSHOT.jar
+WWW_EFFORT=medium java -jar build/libs/backend-0.0.1-SNAPSHOT.jar
 
 # 인기 조합 일정 사전 생성 → seed/itineraries.json 갱신
-#   유료 호출이 조합 수만큼 발생하므로 --wayfarer.seed.limit 으로 먼저 소량 확인할 것
+#   유료 호출이 조합 수만큼 발생하므로 --www.seed.limit 으로 먼저 소량 확인할 것
 ./gradlew bootRun -PskipFrontend \
-  --args='--spring.profiles.active=seed --wayfarer.seed.concurrency=4'
+  --args='--spring.profiles.active=seed --www.seed.concurrency=4'
 ```
 
 토큰 사용량은 백엔드 로그에 남습니다.

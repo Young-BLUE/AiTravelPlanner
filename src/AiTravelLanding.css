@@ -1,5 +1,5 @@
 /*
- * Wayfarer 랜딩 - 화이트 톤 클린 UI
+ * WWW 랜딩 - 화이트 톤 클린 UI
  * 폰트: Pretendard (SIL Open Font License 1.1) - 상업적 사용/재배포 자유
  */
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.css');
@@ -61,10 +61,11 @@
   align-items: center;
   gap: 8px;
   font-size: 19px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text);
   text-decoration: none;
-  letter-spacing: -0.02em;
+  /* WWW 는 같은 글자가 반복돼 음수 자간이면 뭉쳐 보인다 */
+  letter-spacing: 0.02em;
 }
 
 .atl-logo-mark {
