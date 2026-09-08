@@ -5,6 +5,7 @@ import com.anthropic.models.messages.MessageCreateParams;
 import com.anthropic.models.messages.StructuredMessageCreateParams;
 import com.www.plan.dto.PlanParams;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.ObjectProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -47,12 +48,19 @@ public class PromptExtractor {
             - hasExtraRequirements: PLAN 일 때 위 항목들로 표현되지 않는 요구가 있으면 true
             """;
 
-    private final AnthropicClient anthropicClient;
+    /** 데모 모드에서는 빈이 없다. 그때는 규칙 기반 추출로 대체한다. */
+    private final ObjectProvider<AnthropicClient> anthropicClient;
+    private final RuleBasedExtractor ruleBasedExtractor;
 
     @Value("${www.claude.extract-model}")
     private String extractModel;
 
     public PlanParams extract(String userPrompt) {
+        AnthropicClient client = anthropicClient.getIfAvailable();
+        if (client == null) {
+            return ruleBasedExtractor.extract(userPrompt);
+        }
+
         StructuredMessageCreateParams<PlanParams> params = MessageCreateParams.builder()
                 .model(extractModel)
                 .maxTokens(300L)
@@ -61,7 +69,7 @@ public class PromptExtractor {
                 .addUserMessage(userPrompt)
                 .build();
 
-        PlanParams extracted = anthropicClient.messages().create(params).content().stream()
+        PlanParams extracted = client.messages().create(params).content().stream()
                 .flatMap(block -> block.text().stream())
                 .map(text -> text.text())
                 .findFirst()

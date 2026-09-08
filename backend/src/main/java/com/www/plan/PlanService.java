@@ -18,7 +18,9 @@ import com.www.plan.dto.PlanRequest;
 import com.www.plan.dto.PlanResponse;
 import com.www.plan.dto.PlanResult;
 import com.www.plan.dto.Suggestions;
+import com.www.config.DemoModeException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.ObjectProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -84,7 +86,8 @@ public class PlanService {
             - 모든 텍스트는 한국어로 작성합니다.
             """;
 
-    private final AnthropicClient anthropicClient;
+    /** 데모 모드에서는 빈이 없다. 캐시 조회는 그대로 되고 새 생성만 막힌다. */
+    private final ObjectProvider<AnthropicClient> anthropicClient;
     private final PromptExtractor promptExtractor;
     private final ItineraryCacheRepository cacheRepository;
 
@@ -265,7 +268,7 @@ public class PlanService {
                 .addUserMessage(userPrompt)
                 .build();
 
-        var message = anthropicClient.messages().create(params);
+        var message = client().messages().create(params);
 
         log.debug("추천 생성 완료 (effort={}) - 입력 {} / 캐시읽기 {} / 출력 {} 토큰",
                 effort,
@@ -303,7 +306,7 @@ public class PlanService {
                 .addUserMessage(userPrompt)
                 .build();
 
-        var message = anthropicClient.messages().create(params);
+        var message = client().messages().create(params);
 
         log.debug("일정 생성 완료 (effort={}) - 입력 {} / 캐시쓰기 {} / 캐시읽기 {} / 출력 {} 토큰",
                 effort,
@@ -317,6 +320,20 @@ public class PlanService {
                 .map(text -> text.text())
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("모델이 일정을 반환하지 않았습니다."));
+    }
+
+    /** 생성이 필요한 시점에만 부른다. 데모 모드면 여기서 막힌다. */
+    private AnthropicClient client() {
+        AnthropicClient client = anthropicClient.getIfAvailable();
+        if (client == null) {
+            throw new DemoModeException();
+        }
+        return client;
+    }
+
+    /** 데모 모드 여부. 프론트가 배너를 띄우는 데 쓴다. */
+    public boolean isDemoMode() {
+        return anthropicClient.getIfAvailable() == null;
     }
 
     private String serialize(Object value) {

@@ -5,7 +5,10 @@ import com.www.plan.dto.PlanResponse;
 import com.www.plan.dto.PlanResult;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import java.util.Map;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,6 +28,12 @@ public class PlanController {
      * 목적지가 정해졌으면 일정을, 아직 고르는 중이면 목적지 추천을 돌려준다.
      * 어느 쪽인지는 응답의 type 필드로 구분한다.
      */
+    /** 프론트가 데모 배너를 띄울지 판단하는 데 쓴다. */
+    @GetMapping("/status")
+    public Map<String, Object> status() {
+        return Map.of("demoMode", planService.isDemoMode());
+    }
+
     @PostMapping("/plan")
     public ResponseEntity<PlanResponse> plan(@Valid @RequestBody PlanRequest request) {
         PlanResult result = planService.generate(request);

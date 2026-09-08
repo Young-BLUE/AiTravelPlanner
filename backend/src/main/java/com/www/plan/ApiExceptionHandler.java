@@ -4,6 +4,7 @@ import com.anthropic.errors.AnthropicServiceException;
 import com.anthropic.errors.BadRequestException;
 import com.anthropic.errors.RateLimitException;
 import com.anthropic.errors.UnauthorizedException;
+import com.www.config.DemoModeException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +34,18 @@ public class ApiExceptionHandler {
         log.warn("Claude API 호출량 초과", e);
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
                 .body(Map.of("message", "요청이 몰리고 있어요. 잠시 후 다시 시도해 주세요."));
+    }
+
+    /**
+     * 데모 모드에서 새로 생성해야 하는 요청이 온 경우.
+     * 서버 잘못이 아니라 기능이 꺼져 있는 것이므로 무엇이 가능한지 알려준다.
+     */
+    @ExceptionHandler(DemoModeException.class)
+    public ResponseEntity<Map<String, String>> handleDemoMode(DemoModeException e) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(Map.of("message",
+                        "데모 모드예요. 미리 만들어 둔 일정만 볼 수 있어요. "
+                                + "도쿄, 오사카, 후쿠오카, 다낭, 방콕, 타이베이를 3박 4일로 검색해 보세요."));
     }
 
     /**

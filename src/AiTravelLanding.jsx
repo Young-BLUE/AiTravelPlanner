@@ -358,10 +358,19 @@ export default function AiTravelLanding() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [showLongStay, setShowLongStay] = useState(false);
   const [airports, setAirports] = useState([]);
+  const [demoMode, setDemoMode] = useState(false);
   const [customBudget, setCustomBudget] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
+
+  // API 키 없이 띄운 경우 미리 만들어 둔 일정만 조회된다. 그 사실을 먼저 알린다
+  useEffect(() => {
+    fetch('/api/status')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => setDemoMode(Boolean(data?.demoMode)))
+      .catch(() => {});
+  }, []);
 
   // 목적지가 바뀌면 그 도시의 공항 목록을 맞춰 둔다.
   // 목록에서 고른 경우와 직접 타이핑한 경우를 한 곳에서 처리한다
@@ -447,6 +456,15 @@ export default function AiTravelLanding() {
     });
   };
 
+  // 인기 여행지 카드를 누르면 조건 선택 경로로 넘긴다.
+  // 자유 문장이 아니라 목적지를 직접 지정하므로 추출 호출 없이 캐시를 바로 조회한다
+  const handlePickCity = (city) => {
+    setMode('form');
+    setForm({ ...EMPTY_FORM, destination: city });
+    requestPlan({ destination: city, nights: 3 });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   // 추천 카드를 누르면 그 도시로 일정 생성을 이어간다
   const handlePickDestination = (planPrompt) => {
     setPrompt(planPrompt);
@@ -468,13 +486,18 @@ export default function AiTravelLanding() {
             <a href="#budget">예산별 추천</a>
             <a href="#season">시기별 추천</a>
           </nav>
-          <button type="button" className="atl-login">로그인</button>
         </div>
       </header>
 
       <main className="atl-main">
         {/* 히어로 + 프롬프트 입력 */}
         <section className="atl-hero">
+          {demoMode && (
+            <p className="atl-demo" role="status">
+              데모 모드로 실행 중입니다. 미리 만들어 둔 일정만 조회할 수 있어요 —
+              <strong> 도쿄 · 오사카 · 후쿠오카 · 다낭 · 방콕 · 타이베이</strong>를 3박 4일로 검색해 보세요.
+            </p>
+          )}
           <p className="atl-eyebrow">Wherever · Whatever · Whenever</p>
           <h1 className="atl-title">
             가고 싶은 여행지를 입력하고
@@ -750,7 +773,14 @@ export default function AiTravelLanding() {
           </div>
           <ul className="atl-top5">
             {TOP_DESTINATIONS.map((d) => (
-              <li className="atl-dest-card" key={d.rank}>
+              <li key={d.rank}>
+                <button
+                  type="button"
+                  className="atl-dest-card"
+                  onClick={() => handlePickCity(d.city)}
+                  disabled={loading}
+                  aria-label={`${d.city} 3박 4일 일정 만들기`}
+                >
                 <div className="atl-dest-thumb">
                   <img src={d.img} alt={`${d.city}의 ${d.landmark}`} loading="lazy" style={d.pos ? { objectPosition: d.pos } : undefined} />
                   <span className="atl-dest-rank">{d.rank}</span>
@@ -763,6 +793,7 @@ export default function AiTravelLanding() {
                   <p className="atl-dest-landmark">{d.landmark}</p>
                   <p className="atl-dest-tag">{d.tag}</p>
                 </div>
+                </button>
               </li>
             ))}
           </ul>
