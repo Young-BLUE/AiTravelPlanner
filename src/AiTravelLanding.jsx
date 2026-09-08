@@ -4,11 +4,11 @@ import './AiTravelLanding.css';
 // 임시 목업 데이터 - 실제로는 API/CMS에서 받아올 예정
 // 이미지는 public/destinations/ 에 로컬 보관 (출처/라이선스는 CREDITS 참고)
 const TOP_DESTINATIONS = [
-  { rank: 1, city: '도쿄', country: '일본', landmark: '도쿄타워', img: '/destinations/tokyo.jpg', tag: '3박 4일 · 70만원대' },
-  { rank: 2, city: '파리', country: '프랑스', landmark: '에펠탑', img: '/destinations/paris.jpg', tag: '5박 7일 · 220만원대' },
-  { rank: 3, city: '방콕', country: '태국', landmark: '왓 아룬', img: '/destinations/bangkok.jpg', tag: '4박 5일 · 90만원대' },
-  { rank: 4, city: '발리', country: '인도네시아', landmark: '타나롯 사원', img: '/destinations/bali.jpg', tag: '5박 6일 · 130만원대' },
-  { rank: 5, city: '뉴욕', country: '미국', landmark: '타임스스퀘어', img: '/destinations/newyork.jpg', tag: '5박 7일 · 250만원대' },
+  { rank: 1, city: '도쿄', country: '일본', landmark: '도쿄타워', img: '/destinations/tokyo.jpg', nights: 3, budget: '70만원대' },
+  { rank: 2, city: '파리', country: '프랑스', landmark: '에펠탑', img: '/destinations/paris.jpg', nights: 4, budget: '200만원대' },
+  { rank: 3, city: '방콕', country: '태국', landmark: '왓 아룬', img: '/destinations/bangkok.jpg', nights: 4, budget: '90만원대' },
+  { rank: 4, city: '발리', country: '인도네시아', landmark: '타나롯 사원', img: '/destinations/bali.jpg', nights: 4, budget: '120만원대' },
+  { rank: 5, city: '뉴욕', country: '미국', landmark: '타임스스퀘어', img: '/destinations/newyork.jpg', nights: 4, budget: '230만원대' },
 ];
 
 // 캐시 키에 그대로 들어가므로 백엔드 CacheKey.KNOWN_* 와 값이 일치해야 한다
@@ -458,10 +458,10 @@ export default function AiTravelLanding() {
 
   // 인기 여행지 카드를 누르면 조건 선택 경로로 넘긴다.
   // 자유 문장이 아니라 목적지를 직접 지정하므로 추출 호출 없이 캐시를 바로 조회한다
-  const handlePickCity = (city) => {
+  const handlePickCity = (city, nights) => {
     setMode('form');
-    setForm({ ...EMPTY_FORM, destination: city });
-    requestPlan({ destination: city, nights: 3 });
+    setForm({ ...EMPTY_FORM, destination: city, nights });
+    requestPlan({ destination: city, nights });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -777,9 +777,9 @@ export default function AiTravelLanding() {
                 <button
                   type="button"
                   className="atl-dest-card"
-                  onClick={() => handlePickCity(d.city)}
+                  onClick={() => handlePickCity(d.city, d.nights)}
                   disabled={loading}
-                  aria-label={`${d.city} 3박 4일 일정 만들기`}
+                  aria-label={`${d.city} ${nightsLabel(d.nights)} 일정 만들기`}
                 >
                 <div className="atl-dest-thumb">
                   <img src={d.img} alt={`${d.city}의 ${d.landmark}`} loading="lazy" style={d.pos ? { objectPosition: d.pos } : undefined} />
@@ -791,7 +791,9 @@ export default function AiTravelLanding() {
                     <span className="atl-dest-country">{d.country}</span>
                   </p>
                   <p className="atl-dest-landmark">{d.landmark}</p>
-                  <p className="atl-dest-tag">{d.tag}</p>
+                  <p className="atl-dest-tag">
+                    {nightsLabel(d.nights)} · {d.budget}
+                  </p>
                 </div>
                 </button>
               </li>

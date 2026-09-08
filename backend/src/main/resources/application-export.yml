@@ -1,0 +1,5 @@
+# 캐시 -> 시드 파일 내보내기 전용 프로파일.
+# 운영 DB 파일을 그대로 열기 때문에 서버를 내린 뒤 실행해야 한다.
+spring:
+  main:
+    web-application-type: none
