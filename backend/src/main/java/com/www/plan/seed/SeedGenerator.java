@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.www.plan.PlanService;
 import com.www.plan.cache.CacheKey;
 import com.www.plan.dto.Itinerary;
-import com.www.plan.dto.PlanParams;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,11 +15,9 @@ import org.springframework.stereotype.Component;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -57,12 +54,6 @@ public class SeedGenerator implements ApplicationRunner {
     @Value("${www.seed.concurrency:4}")
     private int concurrency;
 
-    private static CacheKey keyOf(SeedCombos.Combo combo) {
-        return CacheKey.from(new PlanParams(PlanParams.Intent.PLAN, combo.destination(),
-                combo.nights(), "", combo.budgetKrw(), "미지정", java.util.List.of(),
-                "무관", false), LocalDate.now());
-    }
-
     /** 기존 시드를 읽는다. 없거나 깨졌으면 빈 목록으로 시작한다. */
     private List<SeedEntry> readExisting(Path path) {
         if (!Files.exists(path)) {
@@ -87,12 +78,12 @@ public class SeedGenerator implements ApplicationRunner {
         List<SeedEntry> existing = readExisting(out);
         Set<String> existingKeys = existing.stream()
                 .map(SeedEntry::cacheKey)
-                .collect(java.util.stream.Collectors.toSet());
+                .collect(java.util.stream.Collectors.toCollection(java.util.HashSet::new));
 
         List<SeedCombos.Combo> combos = new ArrayList<>();
         for (SeedCombos.Combo combo : SeedCombos.all()) {
-            CacheKey key = keyOf(combo);
-            if (!existingKeys.contains(key.asString())) {
+            // add 가 false 면 이미 있거나, 앞선 조합과 키가 같다
+            if (existingKeys.add(planService.keyFor(combo.toRequest()).asString())) {
                 combos.add(combo);
             }
         }
@@ -103,10 +94,7 @@ public class SeedGenerator implements ApplicationRunner {
             log.info("이미 {}건이 모두 생성돼 있어 할 일이 없습니다", existing.size());
             return;
         }
-        log.info("기존 {}건 유지, 신규 {}건 생성", existing.size(), combos.size());
-
-        String season = CacheKey.season(LocalDate.now().getMonthValue());
-        log.info("시드 생성 시작 - {}건 / 동시 {} / 계절 {}", combos.size(), concurrency, season);
+        log.info("기존 {}건 유지, 신규 {}건 생성 - 동시 {}", existing.size(), combos.size(), concurrency);
 
         List<SeedEntry> results = Collections.synchronizedList(new ArrayList<>());
         AtomicInteger done = new AtomicInteger();
@@ -118,8 +106,8 @@ public class SeedGenerator implements ApplicationRunner {
             for (SeedCombos.Combo combo : combos) {
                 futures.add(pool.submit((Callable<Void>) () -> {
                     try {
-                        Itinerary itinerary = planService.generateFresh(combo.prompt());
-                        CacheKey key = keyOf(combo);
+                        Itinerary itinerary = planService.generateFresh(combo.toRequest());
+                        CacheKey key = planService.keyFor(combo.toRequest());
                         results.add(new SeedEntry(key.asString(), key.destination(), key.airport(), key.nights(),
                                 key.budgetBand(), key.companion(), key.interestKey(), key.season(),
                                 OBJECT_MAPPER.writeValueAsString(itinerary)));
@@ -128,7 +116,7 @@ public class SeedGenerator implements ApplicationRunner {
                         // 한 건 실패로 전체를 버리지 않는다. 실패분은 다시 돌리면 된다
                         failed.incrementAndGet();
                         log.error("[{}/{}] 실패 - {} : {}",
-                                done.incrementAndGet(), total, combo.prompt(), e.getMessage());
+                                done.incrementAndGet(), total, combo, e.getMessage());
                     }
                     return null;
                 }));

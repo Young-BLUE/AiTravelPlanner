@@ -35,12 +35,15 @@ const BUDGET_TIERS = [
   { label: '100만원 이상', sub: '장거리 · 유럽/미주', places: ['파리', '뉴욕', '스위스'] },
 ];
 
+// 누르면 그 달로 일정을 만든다. 백엔드 SeedCombos.SEASONAL 과 같은 조합이라 데모 모드에서도 바로 나온다
 const SEASON_PICKS = [
-  { label: '봄', period: '3–5월', places: ['교토', '워싱턴DC'] },
-  { label: '여름', period: '6–8월', places: ['발리', '산토리니'] },
-  { label: '가을', period: '9–11월', places: ['교토', '뉴욕'] },
-  { label: '겨울', period: '12–2월', places: ['삿포로', '헬싱키'] },
+  { label: '봄', period: '3–5월', places: [{ city: '교토', nights: 3, month: 4 }, { city: '워싱턴DC', nights: 4, month: 4 }] },
+  { label: '여름', period: '6–8월', places: [{ city: '발리', nights: 4, month: 7 }, { city: '산토리니', nights: 4, month: 7 }] },
+  { label: '가을', period: '9–11월', places: [{ city: '교토', nights: 3, month: 11 }, { city: '뉴욕', nights: 4, month: 10 }] },
+  { label: '겨울', period: '12–2월', places: [{ city: '삿포로', nights: 3, month: 2 }, { city: '헬싱키', nights: 4, month: 12 }] },
 ];
+
+const MONTHS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
 const FEATURES = [
   {
@@ -237,6 +240,7 @@ const EMPTY_FORM = {
   destination: '',
   airport: '',
   nights: 3,
+  travelMonth: '',
   companion: '',
   budget: '',
   budgetKrw: '',
@@ -437,6 +441,7 @@ export default function AiTravelLanding() {
     requestPlan({
       ...form,
       destination: form.destination.trim(),
+      travelMonth: form.travelMonth || null,
       // 입력은 만원 단위로 받고 서버에는 원 단위로 보낸다
       budgetKrw: customBudget && form.budgetKrw ? Number(form.budgetKrw) * 10000 : null,
       budget: customBudget ? '' : form.budget,
@@ -456,12 +461,13 @@ export default function AiTravelLanding() {
     });
   };
 
-  // 인기 여행지 카드를 누르면 조건 선택 경로로 넘긴다.
+  // 인기 여행지·시기별 추천 카드를 누르면 조건 선택 경로로 넘긴다.
   // 자유 문장이 아니라 목적지를 직접 지정하므로 추출 호출 없이 캐시를 바로 조회한다
-  const handlePickCity = (city, nights) => {
+  const handlePickCity = (city, nights, travelMonth = '') => {
     setMode('form');
-    setForm({ ...EMPTY_FORM, destination: city, nights });
-    requestPlan({ destination: city, nights });
+    setShowLongStay(false);
+    setForm({ ...EMPTY_FORM, destination: city, nights, travelMonth });
+    requestPlan({ destination: city, nights, travelMonth: travelMonth || null });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -633,6 +639,25 @@ export default function AiTravelLanding() {
                     ))}
                   </div>
                 )}
+              </div>
+
+              <div className="atl-field">
+                <span className="atl-field-label">
+                  여행 시기
+                  <em>고르지 않으면 계절에 상관없는 일정을 짜드려요</em>
+                </span>
+                <div className="atl-opts atl-opts-month">
+                  {MONTHS.map((m) => (
+                    <button
+                      type="button"
+                      key={m}
+                      className={`atl-opt ${form.travelMonth === m ? 'is-on' : ''}`}
+                      onClick={() => setForm({ ...form, travelMonth: form.travelMonth === m ? '' : m })}
+                    >
+                      {m}월
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div className="atl-field">
@@ -850,7 +875,21 @@ export default function AiTravelLanding() {
                     {s.label}
                     <em>{s.period}</em>
                   </span>
-                  <span className="atl-season-places">{s.places.join(', ')}</span>
+                  <span className="atl-season-places">
+                    {s.places.map((p) => (
+                      <button
+                        type="button"
+                        key={p.city}
+                        className="atl-season-place"
+                        onClick={() => handlePickCity(p.city, p.nights, p.month)}
+                        disabled={loading}
+                        title={`${p.month}월 · ${nightsLabel(p.nights)}`}
+                        aria-label={`${p.city} ${p.month}월 ${nightsLabel(p.nights)} 일정 만들기`}
+                      >
+                        {p.city}
+                      </button>
+                    ))}
+                  </span>
                 </li>
               ))}
             </ul>

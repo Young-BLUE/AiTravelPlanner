@@ -40,6 +40,9 @@ public class PromptExtractor {
               이 목록에 없는 표현을 새로 만들지 않는다
             - interests: 관광 / 맛집 / 쇼핑 / 카페 / 야경 / 애니메이션 / 자연 / 테마파크
               중에서만 고른다. 문장에 드러난 것만 담고, 없으면 빈 목록
+            - travelSeason: 여행 시기를 봄 / 여름 / 가을 / 겨울 / 미지정 중 하나로.
+              '1월 도쿄'면 '겨울', '벚꽃 보러'면 '봄', '여름휴가'면 '여름'.
+              시기가 드러나지 않으면 '미지정'. 오늘 날짜로 짐작하지 않는다
             - discoveryTheme: DISCOVER 일 때 목적지를 고르는 기준을 아래 목록에서 하나만 고른다.
               겨울 / 봄 / 여름 / 가을 / 따뜻한곳 / 시원한곳 / 휴양 / 도시 / 자연 / 미식 / 무관
               이 목록에 없는 표현을 새로 만들지 않는다. 캐시 키에 쓰이므로 표기가 흔들리면 안 된다.
@@ -75,11 +78,11 @@ public class PromptExtractor {
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("프롬프트에서 여행 정보를 읽지 못했습니다."));
 
-        log.debug("파라미터 추출 - {} / {} / {}박 / {}원 / {} / 관심사{} / 주제='{}' / 추가요구={}",
+        log.debug("파라미터 추출 - {} / {} / {}박 / {}원 / {} / 관심사{} / 시기={} / 주제='{}' / 추가요구={}",
                 extracted.intent(),
                 extracted.hasDestination() ? extracted.destination() : "(목적지 미정)",
                 extracted.nights(), extracted.budgetKrw(), extracted.companion(),
-                extracted.interests(), extracted.discoveryTheme(),
+                extracted.interests(), extracted.travelSeason(), extracted.discoveryTheme(),
                 extracted.hasExtraRequirements());
         return extracted;
     }

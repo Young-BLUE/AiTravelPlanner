@@ -26,7 +26,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -51,6 +50,10 @@ public class PlanService {
             - 하루 3~5곳으로 현실적인 밀도를 유지하고, 식사와 휴식을 반드시 포함합니다.
             - 장소의 운영시간과 휴무일을 고려해 배치합니다. 정기 휴무나 야간 운영처럼
               방문 시각에 영향을 주는 조건은 description 에 함께 적습니다.
+            - 여행 시기가 주어지면 그 달의 날씨와 계절을 반영합니다. 벚꽃·단풍·설경 같은 계절 풍경,
+              우기·태풍·폭염처럼 동선에 영향을 주는 날씨, 그 시기에만 열리는 행사를 고려합니다.
+            - 여행 시기가 없으면 특정 계절을 가정하지 않습니다. 계절 한정 풍경이나 행사를
+              일정의 중심에 두지 말고, 연중 방문할 수 있는 장소로 짭니다.
             - 마지막 날은 공항까지 가는 시간을 확보하고, 마지막 일정을 공항 도착으로 끝냅니다.
             - 도착 공항이 지정되면 첫날과 마지막 날 모두 그 공항을 기준으로 삼고,
               공항에서 도심까지의 실제 이동 수단과 소요시간을 반영합니다.
@@ -80,6 +83,8 @@ public class PlanService {
             - 4~6곳을 추천하되 성격이 겹치지 않게 고릅니다.
               (예: 눈 오는 곳만 다섯 곳이 아니라 설경, 온천, 따뜻한 휴양지를 섞습니다)
             - 왜 그 시기에 그곳이 좋은지 날씨나 행사 같은 근거를 답니다.
+            - 여행 시기가 드러나지 않으면 특정 계절을 가정하지 않습니다.
+              도시마다 가기 좋은 시기를 bestSeason 에 적습니다.
             - 예상 경비는 항공과 숙박을 포함한 1인 기준 원화 정수입니다.
             - 예산이 주어졌다면 그 범위 안의 도시만 고릅니다.
             - planPrompt 는 반드시 '<도시> <숙박>박 <숙박+1>일 여행' 형식으로만 씁니다.
@@ -128,7 +133,7 @@ public class PlanService {
             return new PlanResult(PlanResponse.of(callClaude(userPrompt)), false);
         }
 
-        CacheKey key = CacheKey.from(params, LocalDate.now());
+        CacheKey key = CacheKey.from(params);
         Optional<ItineraryCacheEntity> cached = cacheRepository.findByCacheKey(key.asString());
 
         if (cached.isPresent() && !cached.get().isExpired(ttlDays)) {
@@ -164,6 +169,7 @@ public class PlanService {
                 resolveBudget(request),
                 request.companion(),
                 request.interests() == null ? List.of() : request.interests(),
+                CacheKey.seasonOf(request.travelMonth()),
                 "무관",
                 hasExtra);
     }
@@ -199,6 +205,10 @@ public class PlanService {
         sb.append(request.destination().trim())
                 .append(' ').append(nights).append("박 ").append(nights + 1).append("일 여행");
 
+        // 키에는 계절로 뭉개 넣지만 모델에게는 월을 그대로 준다. 3월 초와 5월 말은 풍경이 다르다
+        if (request.travelMonth() != null) {
+            sb.append(", 여행 시기: ").append(request.travelMonth()).append("월");
+        }
         if (notBlank(request.airport())) {
             sb.append(", 도착 공항: ").append(request.airport().trim());
         }
@@ -229,7 +239,7 @@ public class PlanService {
 
     /** 목적지 추천. 일정보다 출력이 짧아 더 싸고 빠르며, 조합이 적어 캐시가 잘 맞는다. */
     private PlanResult discover(String userPrompt, PlanParams params) {
-        CacheKey key = CacheKey.forDiscovery(params, LocalDate.now());
+        CacheKey key = CacheKey.forDiscovery(params);
         Optional<ItineraryCacheEntity> cached = cacheRepository.findByCacheKey(key.asString());
 
         if (cached.isPresent() && !cached.get().isExpired(ttlDays)) {
@@ -283,9 +293,17 @@ public class PlanService {
                 .orElseThrow(() -> new IllegalStateException("모델이 추천을 반환하지 않았습니다."));
     }
 
+    /**
+     * 조건 선택 요청이 받게 될 캐시 키. 시드 생성기가 쓴다.
+     * 운영 경로와 같은 변환을 거쳐야 시드가 실제 요청과 맞는다.
+     */
+    public CacheKey keyFor(PlanRequest request) {
+        return CacheKey.from(fromStructured(request));
+    }
+
     /** 캐시를 거치지 않고 항상 새로 생성한다. 시드 생성기가 쓴다. */
-    public Itinerary generateFresh(String userPrompt) {
-        return callClaude(userPrompt);
+    public Itinerary generateFresh(PlanRequest request) {
+        return callClaude(composePrompt(request));
     }
 
     private Itinerary callClaude(String userPrompt) {

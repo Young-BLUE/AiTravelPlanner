@@ -23,6 +23,11 @@ public record PlanRequest(
 
         Integer nights,
 
+        /** 여행 월 (1~12). 비우면 계절을 가리지 않는 일정을 만든다 */
+        @Min(value = 1, message = "여행 월은 1~12 사이여야 합니다.")
+        @Max(value = 12, message = "여행 월은 1~12 사이여야 합니다.")
+        Integer travelMonth,
+
         /** 도착 공항 이름. 공항이 둘 이상인 도시에서만 의미가 있다 (나리타 / 하네다) */
         @Size(max = 30, message = "공항명이 너무 깁니다.")
         String airport,

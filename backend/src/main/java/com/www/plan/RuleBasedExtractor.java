@@ -2,6 +2,7 @@ package com.www.plan;
 
 import com.www.city.CityEntity;
 import com.www.city.CityRepository;
+import com.www.plan.cache.CacheKey;
 import com.www.plan.dto.PlanParams;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,8 @@ public class RuleBasedExtractor {
 
     private static final Pattern NIGHTS = Pattern.compile("(\\d+)\\s*박");
     private static final Pattern BUDGET_MAN = Pattern.compile("(\\d+)\\s*만\\s*원");
+    private static final Pattern MONTH = Pattern.compile("(\\d{1,2})\\s*월");
+    private static final List<String> SEASONS = List.of("봄", "여름", "가을", "겨울");
 
     private static final Map<String, String> COMPANION_WORDS = new LinkedHashMap<>(Map.of(
             "혼자", "혼자", "나홀로", "혼자",
@@ -81,16 +84,30 @@ public class RuleBasedExtractor {
                 findBudget(text),
                 findFirst(text, COMPANION_WORDS, "미지정"),
                 findInterests(text),
+                findSeason(text),
                 intent == PlanParams.Intent.DISCOVER
                         ? findFirst(text, THEME_WORDS, "무관")
                         : "무관",
                 false);
 
-        log.debug("규칙 기반 추출 - {} / {} / {}박 / {}원 / {} / 관심사{}",
+        log.debug("규칙 기반 추출 - {} / {} / {}박 / {}원 / {} / 관심사{} / 시기={}",
                 params.intent(),
                 params.hasDestination() ? params.destination() : "(목적지 미정)",
-                params.nights(), params.budgetKrw(), params.companion(), params.interests());
+                params.nights(), params.budgetKrw(), params.companion(), params.interests(),
+                params.travelSeason());
         return params;
+    }
+
+    /** 월이 있으면 월로, 없으면 계절 단어로 판단한다. '월'이 붙은 숫자만 보므로 "3박"이 월로 잡히지 않는다. */
+    private String findSeason(String text) {
+        Matcher m = MONTH.matcher(text);
+        while (m.find()) {
+            String season = CacheKey.seasonOf(Integer.parseInt(m.group(1)));
+            if (SEASONS.contains(season)) {
+                return season;
+            }
+        }
+        return SEASONS.stream().filter(text::contains).findFirst().orElse("미지정");
     }
 
     /** 가장 긴 도시명이 이긴다. "뉴욕"과 "욕"이 함께 걸리는 상황을 피하기 위함. */

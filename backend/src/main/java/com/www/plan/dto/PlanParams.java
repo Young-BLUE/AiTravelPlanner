@@ -38,6 +38,11 @@ public record PlanParams(
         List<String> interests,
 
         @JsonPropertyDescription("""
+                여행 시기의 계절. 봄(3~5월) / 여름(6~8월) / 가을(9~11월) / 겨울(12~2월) 중 하나.
+                '1월에', '벚꽃 시즌', '겨울 여행'처럼 시기가 드러나면 해당 계절, 드러나지 않으면 '미지정'""")
+        String travelSeason,
+
+        @JsonPropertyDescription("""
                 DISCOVER 일 때 목적지를 고르는 기준. 아래 중 가장 가까운 하나만 고른다.
                 겨울 / 봄 / 여름 / 가을 / 따뜻한곳 / 시원한곳 / 휴양 / 도시 / 자연 / 미식 / 무관.
                 시기나 조건이 드러나지 않으면 '무관'. PLAN 이면 '무관'""")
